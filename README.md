@@ -33,14 +33,14 @@ veriyorsan manzaranda yağmur yağar; puanın yüksekse güneş açar. ☀️�
 
 ## Nasıl yayınlanır? (ücretsiz)
 
-Depo GitHub Pages ile ücretsiz yayınlanacak şekilde hazır:
-
-1. GitHub'da depo sayfasında **Settings → Pages** bölümüne gir.
-2. **Source** olarak **"GitHub Actions"** seç.
-3. Bu depodaki değişiklikler `main` dalına geldiğinde uygulama otomatik derlenip
-   `https://<kullanıcı-adın>.github.io/PARA/` adresinde yayınlanır.
+Yayın tamamen otomatik: `main` dalına gelen her değişiklikte GitHub Actions uygulamayı
+derler, testleri koşar ve sonucu `gh-pages` dalına iter; GitHub Pages siteyi
+`https://<kullanıcı-adın>.github.io/PARA/` adresinde yayınlar.
 
 Bu adres telefonda açılıp "Ana ekrana ekle" denerek uygulama gibi kurulabilir.
+
+Not: Site hiç açılmazsa GitHub'da **Settings → Pages** altında kaynak olarak
+`gh-pages` dalının seçili olduğunu kontrol etmek yeterlidir.
 
 ## Geliştirici notları
 
