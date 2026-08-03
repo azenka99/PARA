@@ -1,0 +1,29 @@
+{
+  "aciklama": "Türkiye ikinci el piyasası için KABA ortalama değerler (TL). Uygulama koduna gömülü değildir; bu dosya güncellenerek değerler tazelenir. Kullanıcı her zaman kendi değerini girebilir.",
+  "guncellemeTarihi": "2026-08-01",
+  "markalar": {
+    "Renault": { "Clio": 850000, "Megane": 1150000, "Symbol": 700000, "Taliant": 900000, "Captur": 1250000 },
+    "Fiat": { "Egea": 950000, "Panda": 650000, "500": 900000, "Doblo": 850000 },
+    "Volkswagen": { "Polo": 1100000, "Golf": 1500000, "Passat": 1900000, "T-Roc": 1800000, "Tiguan": 2300000 },
+    "Toyota": { "Corolla": 1350000, "Yaris": 1100000, "C-HR": 1700000, "RAV4": 2500000 },
+    "Honda": { "Civic": 1500000, "City": 1050000, "CR-V": 2200000, "Jazz": 1000000 },
+    "Hyundai": { "i10": 700000, "i20": 950000, "Bayon": 1050000, "Tucson": 1900000, "Accent": 800000 },
+    "Ford": { "Fiesta": 850000, "Focus": 1250000, "Puma": 1400000, "Kuga": 1900000 },
+    "Opel": { "Corsa": 950000, "Astra": 1300000, "Crossland": 1200000, "Mokka": 1400000 },
+    "Peugeot": { "208": 1000000, "301": 800000, "2008": 1300000, "3008": 1900000 },
+    "Dacia": { "Sandero": 750000, "Duster": 1100000, "Jogger": 1200000 },
+    "Skoda": { "Fabia": 1000000, "Octavia": 1600000, "Scala": 1200000, "Kamiq": 1400000 },
+    "Kia": { "Picanto": 700000, "Rio": 900000, "Sportage": 1900000, "Stonic": 1100000 },
+    "Nissan": { "Micra": 850000, "Juke": 1300000, "Qashqai": 1800000 },
+    "Citroen": { "C3": 950000, "C4": 1300000, "C-Elysee": 800000 },
+    "Seat": { "Ibiza": 1000000, "Leon": 1400000, "Arona": 1250000 },
+    "BMW": { "1 Serisi": 1900000, "3 Serisi": 2800000, "5 Serisi": 4200000, "X1": 2900000 },
+    "Mercedes": { "A Serisi": 2000000, "C Serisi": 3200000, "E Serisi": 4800000, "GLA": 2900000 },
+    "Audi": { "A3": 2100000, "A4": 3000000, "Q2": 2300000, "Q3": 2900000 },
+    "Tesla": { "Model Y": 2400000, "Model 3": 2200000 },
+    "Togg": { "T10X": 1900000, "T10F": 2100000 },
+    "BYD": { "Atto 3": 1500000, "Seal": 2000000, "Dolphin": 1200000 },
+    "Chery": { "Tiggo 7 Pro": 1300000, "Omoda 5": 1400000 },
+    "Suzuki": { "Swift": 950000, "Vitara": 1400000, "S-Cross": 1500000 }
+  }
+}
