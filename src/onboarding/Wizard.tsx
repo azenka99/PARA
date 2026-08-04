@@ -14,6 +14,7 @@ import {
   GelirFormu,
   GiderlerFormu,
   MedeniHalFormu,
+  TaksitlerFormu,
   VarliklarFormu,
 } from '../components/forms';
 import { Buton, GizlilikNotu, Kart, MetinAlani, YasalUyari } from '../components/ui';
@@ -55,39 +56,36 @@ export function Sihirbaz() {
     return (
       <div className="icerik sihirbaz-govde">
         <div className="karsilama">
-          <h1>
-            <span className="logo" style={{ fontSize: 44 }}>Manzara</span>
-          </h1>
-          <p style={{ fontSize: 18, fontWeight: 700 }}>
-            Paranın, evinin, arabanın, ailenin… hepsinin tek bir resmi. 🏞️
+          <h1>PARA</h1>
+          <p className="slogan">
+            Varlıklarınız, geliriniz, gideriniz ve borçlarınız — hepsi tek bir resimde.
+            Finansal durumunuzu puanlayan ve manzaraya dönüştüren kişisel finans uygulaması.
           </p>
           <div className="rozetler">
-            <span className="rozet">🧙 5 dakikalık kurulum</span>
-            <span className="rozet">📊 Gerekçeli finansal puan</span>
-            <span className="rozet">🎨 Kendi karakterin</span>
-            <span className="rozet">🔒 Veri cihazında kalır</span>
+            <span className="rozet">5 dakikalık kurulum</span>
+            <span className="rozet">Gerekçeli finansal puan</span>
+            <span className="rozet">Kişisel manzara</span>
+            <span className="rozet">Veri cihazınızda kalır</span>
           </div>
           <GizlilikNotu />
           <YasalUyari />
-          <Buton renk="pembe" onClick={ileri}>
-            Başlayalım! 🚀
-          </Buton>
+          <Buton onClick={ileri}>Başlayalım</Buton>
         </div>
       </div>
     );
   }
 
   const baslik: Record<Exclude<AdimAnahtari, 'hosgeldin'>, [string, string]> = {
-    karakter: ['Karakterini oluştur', 'Bu sensin! Manzaranın tam ortasında duracaksın.'],
-    hayat: ['Hayat profilin', 'Sorularımızı sana göre daraltacağız — gereksiz hiçbir şey sormayız.'],
-    es: ['Eşinin karakteri', `${veri.profil.esAd || 'Eşin'} da sahnede yanında duracak.`],
-    evler: ['Evler', 'Oturduğun ve sahip olduğun evler manzarana yerleşecek.'],
-    araclar: ['Araçlar', 'Marka/model seçersen ortalama ikinci el değerini biz önerelim.'],
-    varliklar: ['Varlıkların', 'Nakit, altın, hisse… Hepsi net değerine katılır.'],
-    gelir: ['Gelirin', 'Aylık net rakamları girmen yeterli.'],
-    giderler: ['Giderlerin', 'Sadece sana uyan kalemleri soruyoruz.'],
-    borclar: ['Borçların', 'Taksitler nakit akışına, kalan borç net değerine işlenir.'],
-    sonuc: ['İşte manzaran! 🎉', 'Finansal durumunun ilk fotoğrafı hazır.'],
+    karakter: ['Karakterinizi oluşturun', 'Manzaranızın tam ortasında siz duracaksınız.'],
+    hayat: ['Hayat profiliniz', 'Soruları size göre daraltacağız — gereksiz hiçbir şey sormayız.'],
+    es: ['Eşinizin karakteri', `${veri.profil.esAd || 'Eşiniz'} de sahnede yanınızda duracak.`],
+    evler: ['Evler', 'Oturduğunuz ve sahip olduğunuz evler manzaranıza yerleşecek.'],
+    araclar: ['Araçlar', 'Araba için marka/model seçerseniz ortalama ikinci el değerini öneririz.'],
+    varliklar: ['Varlıklarınız', 'Nakit, altın, gümüş, döviz, hisse, fon… Hepsi net değerinize katılır.'],
+    gelir: ['Geliriniz', 'Aylık net rakamları girmeniz yeterli.'],
+    giderler: ['Gideriniz', 'Yalnızca size uyan kalemleri soruyoruz.'],
+    borclar: ['Borçlar ve taksitler', 'Taksitler nakit akışına, kalan borç net değerinize işlenir.'],
+    sonuc: ['İşte manzaranız', 'Finansal durumunuzun ilk fotoğrafı hazır.'],
   };
 
   return (
@@ -101,7 +99,7 @@ export function Sihirbaz() {
       {adim === 'karakter' && (
         <Kart>
           <MetinAlani
-            etiket="Adın"
+            etiket="Adınız"
             deger={veri.profil.ad}
             placeholder="örn. Yalçın"
             onDegis={(s) => degistir((v) => ({ ...v, profil: { ...v.profil, ad: s } }))}
@@ -115,13 +113,13 @@ export function Sihirbaz() {
 
       {adim === 'hayat' && (
         <>
-          <Kart baslik="💍 Medeni durum">
+          <Kart baslik="Medeni durum">
             <MedeniHalFormu />
           </Kart>
-          <Kart baslik="🧒 Çocuklar" aciklama="Yaşlarına göre doğru gider sorularını göstereceğiz.">
+          <Kart baslik="Çocuklar" aciklama="Yaşlarına göre doğru gider sorularını göstereceğiz.">
             <CocuklarFormu />
           </Kart>
-          <Kart baslik="🐾 Evcil hayvanlar">
+          <Kart baslik="Evcil hayvanlar">
             <EvcillerFormu />
           </Kart>
         </>
@@ -167,9 +165,14 @@ export function Sihirbaz() {
       )}
 
       {adim === 'borclar' && (
-        <Kart>
-          <BorclarFormu />
-        </Kart>
+        <>
+          <Kart baslik="Krediler">
+            <BorclarFormu />
+          </Kart>
+          <Kart baslik="Taksitli alışverişler">
+            <TaksitlerFormu />
+          </Kart>
+        </>
       )}
 
       {adim === 'sonuc' && (
@@ -177,7 +180,7 @@ export function Sihirbaz() {
           <Kart className="sahne-kart">
             <Sahne veri={veri} />
           </Kart>
-          <Kart baslik="⭐ Finansal puanın">
+          <Kart baslik="Finansal puanınız">
             <PuanDokumu veri={veri} />
           </Kart>
           <YasalUyari />
@@ -190,10 +193,10 @@ export function Sihirbaz() {
         </Buton>
         {adim === 'sonuc' ? (
           <Buton
-            renk="pembe"
+            renk="vurgu"
             onClick={() => degistir((v) => ({ ...v, kurulumTamam: true }))}
           >
-            Panele geç 🎛️
+            Panele geç
           </Buton>
         ) : (
           <Buton onClick={ileri}>Devam →</Buton>

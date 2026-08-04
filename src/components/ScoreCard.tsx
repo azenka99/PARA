@@ -3,10 +3,10 @@ import type { AppData } from '../model/types';
 import { puanHesapla } from '../logic/score';
 
 function puanRengi(oran: number): string {
-  if (oran >= 0.75) return 'var(--nane)';
-  if (oran >= 0.5) return 'var(--sari)';
-  if (oran >= 0.25) return '#ff9f5c';
-  return 'var(--kirmizi)';
+  if (oran >= 0.75) return 'var(--pozitif)';
+  if (oran >= 0.5) return 'var(--vurgu)';
+  if (oran >= 0.25) return '#c9762e';
+  return 'var(--negatif)';
 }
 
 export function PuanHalkasi({ puan, boyut = 130 }: { puan: number; boyut?: number }) {
@@ -15,30 +15,30 @@ export function PuanHalkasi({ puan, boyut = 130 }: { puan: number; boyut?: numbe
   const dolu = (puan / 100) * cevre;
   return (
     <svg width={boyut} height={boyut} viewBox="0 0 130 130" role="img" aria-label={`Finansal puan ${puan}`}>
-      <circle cx={65} cy={65} r={r} fill="none" stroke="#ece8fb" strokeWidth={14} />
+      <circle cx={65} cy={65} r={r} fill="none" stroke="var(--cizgi)" strokeWidth={13} />
       <circle
         cx={65}
         cy={65}
         r={r}
         fill="none"
         stroke={puanRengi(puan / 100)}
-        strokeWidth={14}
+        strokeWidth={13}
         strokeLinecap="round"
         strokeDasharray={`${dolu} ${cevre - dolu}`}
         transform="rotate(-90 65 65)"
       />
       <text
         x={65}
-        y={62}
+        y={63}
         textAnchor="middle"
-        fontSize={34}
+        fontSize={33}
         fontWeight={800}
-        fill="#2d2a3e"
-        style={{ fontFamily: "'Baloo 2', sans-serif" }}
+        fill="var(--metin)"
+        style={{ fontFamily: "'Manrope', sans-serif" }}
       >
         {puan}
       </text>
-      <text x={65} y={84} textAnchor="middle" fontSize={13} fill="#7a768f" style={{ fontFamily: "'Baloo 2', sans-serif" }}>
+      <text x={65} y={84} textAnchor="middle" fontSize={12.5} fill="var(--metin-soluk)" style={{ fontFamily: "'Manrope', sans-serif" }}>
         / 100
       </text>
     </svg>

@@ -1,18 +1,24 @@
 // Alan formları — hem onboarding sihirbazında hem ana paneldeki sekmelerde
 // aynı bileşenler kullanılır; böylece her bilgi sonradan da güncellenebilir.
+import { useState } from 'react';
 import { useVeri, useAracDegerleri } from '../state';
 import type {
   Arac,
+  AracTuru,
   Borc,
   BorcTuru,
+  DovizKodu,
   EvDurumu,
   EvcilTur,
   MedeniHal,
+  YatirimTuru,
 } from '../model/types';
 import { varsayilanAvatar, yeniId } from '../model/defaults';
 import { bantUygunMu, kiraGeliri } from '../logic/finance';
+import { canliFiyatlariCek, fiyatYasiGun } from '../logic/prices';
 import { tl } from '../logic/format';
 import {
+  BolumBaslik,
   BosIpucu,
   Buton,
   CipSecim,
@@ -35,7 +41,7 @@ export function MedeniHalFormu() {
   return (
     <div>
       <CipSecim
-        etiket="Medeni durumun"
+        etiket="Medeni durumunuz"
         secenekler={MEDENI_SECENEKLER}
         deger={veri.profil.medeniHal}
         onDegis={(m) =>
@@ -51,7 +57,7 @@ export function MedeniHalFormu() {
       />
       {veri.profil.medeniHal === 'evli' && (
         <MetinAlani
-          etiket="Eşinin adı"
+          etiket="Eşinizin adı"
           deger={veri.profil.esAd}
           placeholder="örn. Deniz"
           onDegis={(s) => degistir((v) => ({ ...v, profil: { ...v.profil, esAd: s } }))}
@@ -66,7 +72,7 @@ export function CocuklarFormu() {
   const cocuklar = veri.profil.cocuklar;
   return (
     <div>
-      {cocuklar.length === 0 && <BosIpucu>Çocuğun yoksa bu adımı boş bırakabilirsin.</BosIpucu>}
+      {cocuklar.length === 0 && <BosIpucu>Çocuğunuz yoksa bu bölümü boş bırakabilirsiniz.</BosIpucu>}
       {cocuklar.map((c) => (
         <OgeKarti
           key={c.id}
@@ -112,7 +118,7 @@ export function CocuklarFormu() {
         </OgeKarti>
       ))}
       <Buton
-        renk="nane"
+        renk="golgesiz"
         kucuk
         onClick={() =>
           degistir((v) => ({
@@ -131,11 +137,11 @@ export function CocuklarFormu() {
 }
 
 const EVCIL_SECENEKLER: Array<{ deger: EvcilTur; ad: string }> = [
-  { deger: 'kedi', ad: '🐱 Kedi' },
-  { deger: 'kopek', ad: '🐶 Köpek' },
-  { deger: 'kus', ad: '🐦 Kuş' },
-  { deger: 'balik', ad: '🐟 Balık' },
-  { deger: 'diger', ad: '🐾 Diğer' },
+  { deger: 'kedi', ad: 'Kedi' },
+  { deger: 'kopek', ad: 'Köpek' },
+  { deger: 'kus', ad: 'Kuş' },
+  { deger: 'balik', ad: 'Balık' },
+  { deger: 'diger', ad: 'Diğer' },
 ];
 
 export function EvcillerFormu() {
@@ -144,7 +150,7 @@ export function EvcillerFormu() {
   return (
     <div>
       {evciller.length === 0 && (
-        <BosIpucu>Evcil hayvanın yoksa mama/veteriner soruları hiç gösterilmez.</BosIpucu>
+        <BosIpucu>Evcil hayvanınız yoksa mama/veteriner soruları hiç gösterilmez.</BosIpucu>
       )}
       {evciller.map((e) => (
         <OgeKarti
@@ -175,7 +181,7 @@ export function EvcillerFormu() {
             etiket="Adı (isteğe bağlı)"
             deger={e.ad}
             placeholder="örn. Pamuk"
-            ipucu="Ad verirsen giderlerde bu isimle görünür."
+            ipucu="Ad verirseniz giderlerde bu isimle görünür."
             onDegis={(s) =>
               degistir((v) => ({
                 ...v,
@@ -189,7 +195,7 @@ export function EvcillerFormu() {
         </OgeKarti>
       ))}
       <Buton
-        renk="nane"
+        renk="golgesiz"
         kucuk
         onClick={() =>
           degistir((v) => ({
@@ -221,7 +227,7 @@ export function EvlerFormu() {
   return (
     <div>
       {veri.evler.length === 0 && (
-        <BosIpucu>Oturduğun evi (kiracıysan bile) ve sahip olduğun diğer evleri ekle.</BosIpucu>
+        <BosIpucu>Oturduğunuz evi (kiracıysanız bile) ve sahip olduğunuz diğer evleri ekleyin.</BosIpucu>
       )}
       {veri.evler.map((ev) => (
         <OgeKarti
@@ -229,7 +235,7 @@ export function EvlerFormu() {
           onSil={() => degistir((v) => ({ ...v, evler: v.evler.filter((x) => x.id !== ev.id) }))}
         >
           <CipSecim
-            etiket="Bu evdeki durumun"
+            etiket="Bu evdeki durumunuz"
             secenekler={EV_DURUMLARI}
             deger={ev.durum}
             onDegis={(d) =>
@@ -258,7 +264,7 @@ export function EvlerFormu() {
           )}
           {ev.durum === 'kiraci' && (
             <SayiAlani
-              etiket="Ödediğin aylık kira"
+              etiket="Ödediğiniz aylık kira"
               deger={ev.aylikKira}
               onDegis={(n) =>
                 degistir((v) => ({
@@ -270,7 +276,7 @@ export function EvlerFormu() {
           )}
           {ev.durum === 'kirada' && (
             <SayiAlani
-              etiket="Aldığın aylık kira"
+              etiket="Aldığınız aylık kira"
               deger={ev.aylikKira}
               ipucu="Gelir bölümüne otomatik eklenir."
               onDegis={(n) =>
@@ -284,7 +290,7 @@ export function EvlerFormu() {
         </OgeKarti>
       ))}
       <Buton
-        renk="nane"
+        renk="golgesiz"
         kucuk
         onClick={() =>
           degistir((v) => ({
@@ -301,12 +307,18 @@ export function EvlerFormu() {
 
 /* ---------------- Araçlar ---------------- */
 
+const ARAC_TURLERI: Array<{ deger: AracTuru; ad: string }> = [
+  { deger: 'araba', ad: 'Araba' },
+  { deger: 'motosiklet', ad: 'Motosiklet' },
+  { deger: 'diger', ad: 'Diğer' },
+];
+
 function AracSatiri({ arac }: { arac: Arac }) {
   const { degistir } = useVeri();
   const piyasa = useAracDegerleri();
 
   const markalar = piyasa ? Object.keys(piyasa.markalar) : [];
-  const markaListede = markalar.includes(arac.marka);
+  const markaListede = arac.tur === 'araba' && markalar.includes(arac.marka);
   const modeller = piyasa && markaListede ? Object.keys(piyasa.markalar[arac.marka]) : [];
   const oneri =
     piyasa && markaListede && arac.model in piyasa.markalar[arac.marka]
@@ -323,14 +335,20 @@ function AracSatiri({ arac }: { arac: Arac }) {
     <OgeKarti
       onSil={() => degistir((v) => ({ ...v, araclar: v.araclar.filter((x) => x.id !== arac.id) }))}
     >
-      {piyasa && (
+      <CipSecim
+        etiket="Araç türü"
+        secenekler={ARAC_TURLERI}
+        deger={arac.tur}
+        onDegis={(t) => guncelle({ tur: t })}
+      />
+      {arac.tur === 'araba' && piyasa ? (
         <div className="izgara-2">
           <SecimKutusu
             etiket="Marka"
             secenekler={[
-              { deger: '', ad: 'Seç…' },
+              { deger: '', ad: 'Seçin…' },
               ...markalar.map((m) => ({ deger: m, ad: m })),
-              { deger: '__diger__', ad: 'Diğer (elle gir)' },
+              { deger: '__diger__', ad: 'Diğer (elle girin)' },
             ]}
             deger={markaListede ? arac.marka : arac.marka ? '__diger__' : ''}
             onDegis={(m) => {
@@ -342,7 +360,7 @@ function AracSatiri({ arac }: { arac: Arac }) {
             <SecimKutusu
               etiket="Model"
               secenekler={[
-                { deger: '', ad: 'Seç…' },
+                { deger: '', ad: 'Seçin…' },
                 ...modeller.map((m) => ({ deger: m, ad: m })),
               ]}
               deger={modeller.includes(arac.model) ? arac.model : ''}
@@ -355,11 +373,10 @@ function AracSatiri({ arac }: { arac: Arac }) {
             <MetinAlani etiket="Marka / Model" deger={arac.model} placeholder="örn. Lada Samara" onDegis={(s) => guncelle({ model: s })} />
           )}
         </div>
-      )}
-      {!piyasa && (
+      ) : (
         <div className="izgara-2">
-          <MetinAlani etiket="Marka" deger={arac.marka} onDegis={(s) => guncelle({ marka: s })} />
-          <MetinAlani etiket="Model" deger={arac.model} onDegis={(s) => guncelle({ model: s })} />
+          <MetinAlani etiket="Marka" deger={arac.marka} placeholder="örn. Honda" onDegis={(s) => guncelle({ marka: s })} />
+          <MetinAlani etiket="Model" deger={arac.model} placeholder="örn. CB500" onDegis={(s) => guncelle({ model: s })} />
         </div>
       )}
       <SayiAlani
@@ -367,7 +384,7 @@ function AracSatiri({ arac }: { arac: Arac }) {
         deger={arac.deger}
         ipucu={
           oneri
-            ? `Ortalama ikinci el değeri önerildi (${tl(oneri)}, ${piyasa?.guncellemeTarihi} itibarıyla). Üzerine yazabilirsin.`
+            ? `Ortalama ikinci el değeri önerildi (${tl(oneri)}, ${piyasa?.guncellemeTarihi} itibarıyla). Üzerine yazabilirsiniz.`
             : 'Kabaca bugünkü satış değeri.'
         }
         onDegis={(n) => guncelle({ deger: n })}
@@ -381,18 +398,18 @@ export function AraclarFormu() {
   return (
     <div>
       {veri.araclar.length === 0 && (
-        <BosIpucu>Aracın yoksa boş bırak — gider adımında yakıt yerine toplu taşıma sorulur.</BosIpucu>
+        <BosIpucu>Aracınız yoksa boş bırakın — giderlerde yalnızca toplu taşıma sorulur.</BosIpucu>
       )}
       {veri.araclar.map((a) => (
         <AracSatiri key={a.id} arac={a} />
       ))}
       <Buton
-        renk="nane"
+        renk="golgesiz"
         kucuk
         onClick={() =>
           degistir((v) => ({
             ...v,
-            araclar: [...v.araclar, { id: yeniId(), marka: '', model: '', deger: 0 }],
+            araclar: [...v.araclar, { id: yeniId(), tur: 'araba', marka: '', model: '', deger: 0 }],
           }))
         }
       >
@@ -404,66 +421,200 @@ export function AraclarFormu() {
 
 /* ---------------- Varlıklar ---------------- */
 
+const YATIRIM_TURLERI: Array<{ deger: YatirimTuru; ad: string }> = [
+  { deger: 'hisse', ad: 'Hisse' },
+  { deger: 'fon', ad: 'Fon' },
+  { deger: 'etf', ad: 'ETF' },
+  { deger: 'diger', ad: 'Diğer' },
+];
+
+const DOVIZ_KODLARI: Array<{ deger: DovizKodu; ad: string }> = [
+  { deger: 'USD', ad: 'Dolar (USD)' },
+  { deger: 'EUR', ad: 'Euro (EUR)' },
+  { deger: 'GBP', ad: 'Sterlin (GBP)' },
+  { deger: 'diger', ad: 'Diğer' },
+];
+
+function CanliFiyatButonu() {
+  const { degistir } = useVeri();
+  const [durum, setDurum] = useState<'bekliyor' | 'calisiyor' | 'oldu' | 'olmadi'>('bekliyor');
+
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <Buton
+        renk="vurgu"
+        kucuk
+        disabled={durum === 'calisiyor'}
+        onClick={async () => {
+          setDurum('calisiyor');
+          const f = await canliFiyatlariCek();
+          if (!f) {
+            setDurum('olmadi');
+            return;
+          }
+          degistir((v) => ({
+            ...v,
+            varliklar: {
+              ...v.varliklar,
+              altinGramFiyat: f.altinGram ?? v.varliklar.altinGramFiyat,
+              gumusGramFiyat: f.gumusGram ?? v.varliklar.gumusGramFiyat,
+              dovizler: v.varliklar.dovizler.map((d) => {
+                const yeni = d.kod === 'USD' ? f.usd : d.kod === 'EUR' ? f.eur : d.kod === 'GBP' ? f.gbp : undefined;
+                return yeni ? { ...d, kur: yeni } : d;
+              }),
+              fiyatGuncelleme: new Date().toISOString(),
+            },
+          }));
+          setDurum('oldu');
+        }}
+      >
+        {durum === 'calisiyor' ? 'Fiyatlar çekiliyor…' : '⟳ Güncel fiyatları çek (deneysel)'}
+      </Buton>
+      {durum === 'oldu' && (
+        <span className="alan-ipucu"> ✓ Altın/gümüş/döviz fiyatları güncellendi.</span>
+      )}
+      {durum === 'olmadi' && (
+        <span className="alan-ipucu">
+          {' '}Kaynağa ulaşılamadı — fiyatları elle girmeye devam edebilirsiniz.
+        </span>
+      )}
+    </div>
+  );
+}
+
 export function VarliklarFormu() {
   const { veri, degistir } = useVeri();
   const va = veri.varliklar;
   const d = (kismi: Partial<typeof va>) =>
     degistir((v) => ({ ...v, varliklar: { ...v.varliklar, ...kismi } }));
 
+  const fiyatYasi = fiyatYasiGun(va.fiyatGuncelleme);
+
   return (
     <div>
+      <BolumBaslik>Nakit ve mevduat</BolumBaslik>
       <div className="izgara-2">
         <SayiAlani etiket="Nakit (cüzdan + kasa)" deger={va.nakit} onDegis={(n) => d({ nakit: n })} />
         <SayiAlani etiket="Banka hesapları + mevduat" deger={va.banka} onDegis={(n) => d({ banka: n })} />
-        <SayiAlani etiket="Altın (gram)" deger={va.altinGram} birim="gr" onDegis={(n) => d({ altinGram: n })} />
-        <SayiAlani
-          etiket="Gram altın fiyatı"
-          deger={va.altinGramFiyat}
-          ipucu="Güncel fiyatı elle gir — v1'de otomatik çekilmiyor."
-          onDegis={(n) => d({ altinGramFiyat: n })}
-        />
-        <SayiAlani etiket="Fon / ETF toplam değeri" deger={va.fonEtf} onDegis={(n) => d({ fonEtf: n })} />
-        <SayiAlani etiket="Kripto toplam değeri" deger={va.kripto} onDegis={(n) => d({ kripto: n })} />
-        <SayiAlani etiket="Diğer varlıklar" deger={va.diger} onDegis={(n) => d({ diger: n })} />
       </div>
 
-      <span className="alan-etiket">Hisse senetleri</span>
-      {va.hisseler.length === 0 && <BosIpucu>Hissen yoksa boş bırak.</BosIpucu>}
-      {va.hisseler.map((h) => (
+      <BolumBaslik>Altın ve gümüş</BolumBaslik>
+      {fiyatYasi !== null && fiyatYasi > 60 && (
+        <BosIpucu>
+          ⚠️ Fiyatlar {fiyatYasi} gündür güncellenmedi — puanınızın güncel kalması için tazeleyin.
+        </BosIpucu>
+      )}
+      <CanliFiyatButonu />
+      <div className="izgara-2">
+        <SayiAlani etiket="Altın (gram)" deger={va.altinGram} birim="gr" onDegis={(n) => d({ altinGram: n })} />
+        <SayiAlani etiket="Gram altın fiyatı" deger={va.altinGramFiyat} onDegis={(n) => d({ altinGramFiyat: n })} />
+        <SayiAlani etiket="Gümüş (gram)" deger={va.gumusGram} birim="gr" onDegis={(n) => d({ gumusGram: n })} />
+        <SayiAlani etiket="Gram gümüş fiyatı" deger={va.gumusGramFiyat} onDegis={(n) => d({ gumusGramFiyat: n })} />
+      </div>
+
+      <BolumBaslik>Döviz</BolumBaslik>
+      {va.dovizler.length === 0 && <BosIpucu>Döviz birikiminiz yoksa boş bırakın.</BosIpucu>}
+      {va.dovizler.map((doviz) => (
         <OgeKarti
-          key={h.id}
-          onSil={() => d({ hisseler: va.hisseler.filter((x) => x.id !== h.id) })}
+          key={doviz.id}
+          onSil={() => d({ dovizler: va.dovizler.filter((x) => x.id !== doviz.id) })}
         >
           <div className="satir">
-            <MetinAlani
-              etiket="Kod"
-              deger={h.kod}
-              placeholder="THYAO"
-              onDegis={(s) =>
-                d({ hisseler: va.hisseler.map((x) => (x.id === h.id ? { ...x, kod: s.toUpperCase() } : x)) })
+            <SecimKutusu
+              etiket="Para birimi"
+              secenekler={DOVIZ_KODLARI}
+              deger={doviz.kod}
+              onDegis={(k) =>
+                d({ dovizler: va.dovizler.map((x) => (x.id === doviz.id ? { ...x, kod: k } : x)) })
               }
             />
             <SayiAlani
-              etiket="Lot"
-              deger={h.lot}
-              birim="lot"
-              onDegis={(n) => d({ hisseler: va.hisseler.map((x) => (x.id === h.id ? { ...x, lot: n } : x)) })}
+              etiket="Miktar"
+              deger={doviz.miktar}
+              birim={doviz.kod === 'diger' ? '' : doviz.kod}
+              onDegis={(n) =>
+                d({ dovizler: va.dovizler.map((x) => (x.id === doviz.id ? { ...x, miktar: n } : x)) })
+              }
             />
             <SayiAlani
-              etiket="Fiyat"
-              deger={h.fiyat}
-              onDegis={(n) => d({ hisseler: va.hisseler.map((x) => (x.id === h.id ? { ...x, fiyat: n } : x)) })}
+              etiket="Kur (1 birim)"
+              deger={doviz.kur}
+              onDegis={(n) =>
+                d({ dovizler: va.dovizler.map((x) => (x.id === doviz.id ? { ...x, kur: n } : x)) })
+              }
             />
           </div>
         </OgeKarti>
       ))}
       <Buton
-        renk="nane"
+        renk="golgesiz"
         kucuk
-        onClick={() => d({ hisseler: [...va.hisseler, { id: yeniId(), kod: '', lot: 0, fiyat: 0 }] })}
+        onClick={() => d({ dovizler: [...va.dovizler, { id: yeniId(), kod: 'USD', miktar: 0, kur: 0 }] })}
       >
-        + Hisse ekle
+        + Döviz ekle
       </Buton>
+
+      <BolumBaslik>Hisse senetleri ve yatırım fonları</BolumBaslik>
+      {va.yatirimlar.length === 0 && <BosIpucu>Hisse/fon/ETF'iniz yoksa boş bırakın.</BosIpucu>}
+      {va.yatirimlar.map((y) => (
+        <OgeKarti
+          key={y.id}
+          onSil={() => d({ yatirimlar: va.yatirimlar.filter((x) => x.id !== y.id) })}
+        >
+          <div className="satir">
+            <MetinAlani
+              etiket="Adı / kodu"
+              deger={y.ad}
+              placeholder="örn. THYAO, Teknoloji Fonu"
+              onDegis={(s) =>
+                d({ yatirimlar: va.yatirimlar.map((x) => (x.id === y.id ? { ...x, ad: s } : x)) })
+              }
+            />
+            <SecimKutusu
+              etiket="Tür"
+              secenekler={YATIRIM_TURLERI}
+              deger={y.tur}
+              onDegis={(t) =>
+                d({ yatirimlar: va.yatirimlar.map((x) => (x.id === y.id ? { ...x, tur: t } : x)) })
+              }
+            />
+            <SayiAlani
+              etiket="Güncel değeri"
+              deger={y.deger}
+              onDegis={(n) =>
+                d({ yatirimlar: va.yatirimlar.map((x) => (x.id === y.id ? { ...x, deger: n } : x)) })
+              }
+            />
+          </div>
+        </OgeKarti>
+      ))}
+      <Buton
+        renk="golgesiz"
+        kucuk
+        onClick={() =>
+          d({ yatirimlar: [...va.yatirimlar, { id: yeniId(), ad: '', tur: 'hisse', deger: 0 }] })
+        }
+      >
+        + Hisse / fon ekle
+      </Buton>
+
+      <BolumBaslik>Diğer</BolumBaslik>
+      <div className="izgara-2">
+        <SayiAlani etiket="Kripto (toplam değer)" deger={va.kripto} onDegis={(n) => d({ kripto: n })} />
+        <SayiAlani
+          etiket="BES birikimi"
+          deger={va.bes}
+          ipucu="Bireysel emeklilik — devlet katkısı dahil güncel toplam."
+          onDegis={(n) => d({ bes: n })}
+        />
+        <SayiAlani
+          etiket="Alacaklarınız"
+          deger={va.alacaklar}
+          ipucu="Başkasına borç verdiğiniz, geri almayı beklediğiniz para."
+          onDegis={(n) => d({ alacaklar: n })}
+        />
+        <SayiAlani etiket="Diğer varlıklar" deger={va.diger} onDegis={(n) => d({ diger: n })} />
+      </div>
     </div>
   );
 }
@@ -479,10 +630,10 @@ export function GelirFormu() {
   return (
     <div>
       <div className="izgara-2">
-        <SayiAlani etiket="Aylık net maaşın" deger={g.maas} onDegis={(n) => d({ maas: n })} />
+        <SayiAlani etiket="Aylık net maaşınız" deger={g.maas} onDegis={(n) => d({ maas: n })} />
         {veri.profil.medeniHal === 'evli' && (
           <SayiAlani
-            etiket={`${veri.profil.esAd || 'Eşinin'} aylık net geliri`}
+            etiket={`${veri.profil.esAd || 'Eşinizin'} aylık net geliri`}
             deger={g.esMaas}
             onDegis={(n) => d({ esMaas: n })}
           />
@@ -493,10 +644,17 @@ export function GelirFormu() {
           ipucu="Serbest iş, prim, düzenli destek vb."
           onDegis={(n) => d({ ekGelir: n })}
         />
+        {veri.profil.medeniHal === 'bosanmis' && (
+          <SayiAlani
+            etiket="Aldığınız nafaka (aylık)"
+            deger={g.nafakaAlinan}
+            onDegis={(n) => d({ nafakaAlinan: n })}
+          />
+        )}
       </div>
       {kira > 0 && (
         <BosIpucu>
-          🏠 Kiraya verdiğin ev(ler)den aylık {tl(kira)} kira geliri otomatik eklendi.
+          Kiraya verdiğiniz ev(ler)den aylık {tl(kira)} kira geliri otomatik eklendi.
         </BosIpucu>
       )}
     </div>
@@ -514,6 +672,8 @@ export function GiderlerFormu() {
     degistir((v) => ({ ...v, giderler: { ...v.giderler, arac: { ...v.giderler.arac, ...kismi } } }));
   const cocukD = (kismi: Partial<typeof gi.cocuk>) =>
     degistir((v) => ({ ...v, giderler: { ...v.giderler, cocuk: { ...v.giderler.cocuk, ...kismi } } }));
+  const giderD = (kismi: Partial<typeof gi>) =>
+    degistir((v) => ({ ...v, giderler: { ...v.giderler, ...kismi } }));
 
   const aracVar = veri.araclar.length > 0;
   const cocuklar = veri.profil.cocuklar;
@@ -536,7 +696,7 @@ export function GiderlerFormu() {
 
   return (
     <div>
-      <span className="alan-etiket" style={{ fontSize: 16 }}>Sabit giderler (aylık)</span>
+      <BolumBaslik>Sabit giderler (aylık)</BolumBaslik>
       <div className="izgara-2">
         <SayiAlani etiket="Faturalar (elektrik, su, doğalgaz, internet)" deger={gi.sabit.faturalar} onDegis={(n) => sabitD({ faturalar: n })} />
         <SayiAlani etiket="Aidat" deger={gi.sabit.aidat} onDegis={(n) => sabitD({ aidat: n })} />
@@ -547,31 +707,58 @@ export function GiderlerFormu() {
         <SayiAlani etiket="Giyim" deger={gi.sabit.giyim} onDegis={(n) => sabitD({ giyim: n })} />
         <SayiAlani etiket="Diğer" deger={gi.sabit.diger} onDegis={(n) => sabitD({ diger: n })} />
       </div>
+      <SayiAlani
+        etiket="Sigorta poliçeleri (YILLIK toplam)"
+        deger={gi.yillikSigortalar}
+        ipucu="Hayat, sağlık, DASK/konut vb. — yıllık toplamı girin, hesapta 12'ye bölünür."
+        onDegis={(n) => giderD({ yillikSigortalar: n })}
+      />
 
-      <span className="alan-etiket" style={{ fontSize: 16 }}>Ulaşım</span>
-      {aracVar ? (
+      <BolumBaslik>Ulaşım</BolumBaslik>
+      {aracVar && (
         <div className="izgara-2">
           <SayiAlani etiket="Yakıt (aylık)" deger={gi.arac.yakit} onDegis={(n) => aracD({ yakit: n })} />
           <SayiAlani etiket="Otopark (aylık)" deger={gi.arac.otopark} onDegis={(n) => aracD({ otopark: n })} />
           <SayiAlani
             etiket="Kasko + muayene + bakım (YILLIK)"
             deger={gi.arac.yillikSigortaBakim}
-            ipucu="Yıllık toplamı gir; hesapta 12'ye bölünür."
+            ipucu="Yıllık toplamı girin; hesapta 12'ye bölünür."
             onDegis={(n) => aracD({ yillikSigortaBakim: n })}
           />
         </div>
-      ) : (
-        <SayiAlani
-          etiket="Toplu taşıma (aylık)"
-          deger={gi.topluTasima}
-          ipucu="Aracın olmadığı için yakıt/kasko yerine bunu soruyoruz."
-          onDegis={(n) => degistir((v) => ({ ...v, giderler: { ...v.giderler, topluTasima: n } }))}
-        />
+      )}
+      <SayiAlani
+        etiket="Toplu taşıma (aylık)"
+        deger={gi.topluTasima}
+        ipucu={aracVar ? 'Aracınız olsa da metro/otobüs kullanıyorsanız girin.' : 'İşe gidiş-geliş dahil aylık toplam.'}
+        onDegis={(n) => giderD({ topluTasima: n })}
+      />
+
+      {veri.profil.medeniHal === 'evli' && (
+        <>
+          <BolumBaslik>Aile</BolumBaslik>
+          <SayiAlani
+            etiket={`${veri.profil.esAd || 'Eşinize'} verdiğiniz aylık para`}
+            deger={gi.esHarcligi}
+            ipucu="Yoksa boş bırakın."
+            onDegis={(n) => giderD({ esHarcligi: n })}
+          />
+        </>
+      )}
+      {veri.profil.medeniHal === 'bosanmis' && (
+        <>
+          <BolumBaslik>Aile</BolumBaslik>
+          <SayiAlani
+            etiket="Ödediğiniz nafaka (aylık)"
+            deger={gi.nafakaOdenen}
+            onDegis={(n) => giderD({ nafakaOdenen: n })}
+          />
+        </>
       )}
 
       {veri.profil.evciller.length > 0 && (
         <>
-          <span className="alan-etiket" style={{ fontSize: 16 }}>Evcil hayvan giderleri</span>
+          <BolumBaslik>Evcil hayvan giderleri</BolumBaslik>
           {veri.profil.evciller.map((e) => {
             const g = evcilGideriGetir(e.id);
             const ad = e.ad || (e.tur === 'kedi' ? 'Kedi' : e.tur === 'kopek' ? 'Köpek' : e.tur === 'kus' ? 'Kuş' : e.tur === 'balik' ? 'Balık' : 'Dostumuz');
@@ -596,7 +783,7 @@ export function GiderlerFormu() {
 
       {cocuklar.length > 0 && (
         <>
-          <span className="alan-etiket" style={{ fontSize: 16 }}>Çocuk giderleri (aylık)</span>
+          <BolumBaslik>Çocuk giderleri (aylık)</BolumBaslik>
           <div className="izgara-2">
             {bantUygunMu(cocuklar, 'bezMama') && (
               <SayiAlani etiket="Bebek bezi / mama" deger={gi.cocuk.bezMama} onDegis={(n) => cocukD({ bezMama: n })} />
@@ -610,6 +797,13 @@ export function GiderlerFormu() {
             {bantUygunMu(cocuklar, 'harclik') && (
               <SayiAlani etiket="Harçlık" deger={gi.cocuk.harclik} onDegis={(n) => cocukD({ harclik: n })} />
             )}
+            {bantUygunMu(cocuklar, 'universite') && (
+              <SayiAlani
+                etiket="Üniversite (yurt/kira/harçlık)"
+                deger={gi.cocuk.universite}
+                onDegis={(n) => cocukD({ universite: n })}
+              />
+            )}
           </div>
         </>
       )}
@@ -617,7 +811,7 @@ export function GiderlerFormu() {
   );
 }
 
-/* ---------------- Borçlar ---------------- */
+/* ---------------- Borçlar ve taksitler ---------------- */
 
 const BORC_TURLERI: Array<{ deger: BorcTuru; ad: string }> = [
   { deger: 'konut', ad: 'Konut kredisi' },
@@ -637,7 +831,7 @@ export function BorclarFormu() {
 
   return (
     <div>
-      {veri.borclar.length === 0 && <BosIpucu>Borcun yoksa bu bölümü boş bırakabilirsin. 🎉</BosIpucu>}
+      {veri.borclar.length === 0 && <BosIpucu>Krediniz yoksa bu bölümü boş bırakabilirsiniz.</BosIpucu>}
       {veri.borclar.map((b) => (
         <OgeKarti
           key={b.id}
@@ -653,20 +847,20 @@ export function BorclarFormu() {
             <SayiAlani
               etiket="Kalan borç (toplam)"
               deger={b.kalan}
-              ipucu="Net değerinden düşülür."
+              ipucu="Net değerinizden düşülür."
               onDegis={(n) => guncelle(b.id, { kalan: n })}
             />
             <SayiAlani
               etiket="Aylık taksit"
               deger={b.taksit}
-              ipucu="Aylık giderlerine eklenir."
+              ipucu="Aylık giderlerinize eklenir."
               onDegis={(n) => guncelle(b.id, { taksit: n })}
             />
           </div>
         </OgeKarti>
       ))}
       <Buton
-        renk="nane"
+        renk="golgesiz"
         kucuk
         onClick={() =>
           degistir((v) => ({
@@ -675,7 +869,76 @@ export function BorclarFormu() {
           }))
         }
       >
-        + Borç ekle
+        + Kredi ekle
+      </Buton>
+    </div>
+  );
+}
+
+export function TaksitlerFormu() {
+  const { veri, degistir } = useVeri();
+  return (
+    <div>
+      {veri.taksitler.length === 0 && (
+        <BosIpucu>Taksitle aldığınız ürünler (telefon, beyaz eşya…) buraya — kalan borç otomatik hesaplanır.</BosIpucu>
+      )}
+      {veri.taksitler.map((t) => (
+        <OgeKarti
+          key={t.id}
+          onSil={() => degistir((v) => ({ ...v, taksitler: v.taksitler.filter((x) => x.id !== t.id) }))}
+        >
+          <div className="satir">
+            <MetinAlani
+              etiket="Ne aldınız?"
+              deger={t.ad}
+              placeholder="örn. Telefon"
+              onDegis={(s) =>
+                degistir((v) => ({
+                  ...v,
+                  taksitler: v.taksitler.map((x) => (x.id === t.id ? { ...x, ad: s } : x)),
+                }))
+              }
+            />
+            <SayiAlani
+              etiket="Aylık taksit"
+              deger={t.aylikTaksit}
+              onDegis={(n) =>
+                degistir((v) => ({
+                  ...v,
+                  taksitler: v.taksitler.map((x) => (x.id === t.id ? { ...x, aylikTaksit: n } : x)),
+                }))
+              }
+            />
+            <SayiAlani
+              etiket="Kaç taksit kaldı?"
+              deger={t.kalanAy}
+              birim="ay"
+              onDegis={(n) =>
+                degistir((v) => ({
+                  ...v,
+                  taksitler: v.taksitler.map((x) => (x.id === t.id ? { ...x, kalanAy: Math.round(n) } : x)),
+                }))
+              }
+            />
+          </div>
+          {t.aylikTaksit > 0 && t.kalanAy > 0 && (
+            <span className="alan-ipucu">
+              Kalan toplam: {tl(t.aylikTaksit * t.kalanAy)} — net değerinizden düşülür.
+            </span>
+          )}
+        </OgeKarti>
+      ))}
+      <Buton
+        renk="golgesiz"
+        kucuk
+        onClick={() =>
+          degistir((v) => ({
+            ...v,
+            taksitler: [...v.taksitler, { id: yeniId(), ad: '', aylikTaksit: 0, kalanAy: 0 }],
+          }))
+        }
+      >
+        + Taksitli alışveriş ekle
       </Buton>
     </div>
   );

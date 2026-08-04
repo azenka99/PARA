@@ -96,9 +96,9 @@ export function AvatarGovde({ config }: { config: AvatarConfig }) {
       {/* yüz */}
       <circle cx={51} cy={41} r={2.6} fill="#2d2a3e" />
       <circle cx={69} cy={41} r={2.6} fill="#2d2a3e" />
-      <path d="M52,50 Q60,57 68,50" stroke="#2d2a3e" strokeWidth={2.4} fill="none" strokeLinecap="round" />
-      <circle cx={45} cy={48} r={3.2} fill="#ff7ab8" opacity={0.45} />
-      <circle cx={75} cy={48} r={3.2} fill="#ff7ab8" opacity={0.45} />
+      <path d="M52,50 Q60,56 68,50" stroke="#2d2a3e" strokeWidth={2.2} fill="none" strokeLinecap="round" />
+      <circle cx={45} cy={48} r={2.8} fill="#d98a8a" opacity={0.28} />
+      <circle cx={75} cy={48} r={2.8} fill="#d98a8a" opacity={0.28} />
 
       {/* sakal */}
       {aksesuarlar.includes('sakal') && (

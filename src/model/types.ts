@@ -1,4 +1,4 @@
-// Manzara — alan modeli (domain model)
+// PARA — alan modeli (domain model)
 // Tüm parasal değerler TL (Türk Lirası) cinsindendir ve aylıktır,
 // aksi alan adında belirtilmedikçe (örn. yillik... alanları).
 
@@ -47,35 +47,57 @@ export interface Ev {
   aylikKira: number; // kiracı: ödenen kira, kirada: alınan kira, diğerleri: 0
 }
 
+export type AracTuru = 'araba' | 'motosiklet' | 'diger';
+
 export interface Arac {
   id: string;
+  tur: AracTuru;
   marka: string;
   model: string;
-  deger: number; // TL — piyasa ortalamasından önerilir, kullanıcı değiştirebilir
+  deger: number; // TL — arabalarda piyasa ortalamasından önerilir, kullanıcı değiştirebilir
 }
 
-export interface Hisse {
+export type YatirimTuru = 'hisse' | 'fon' | 'etf' | 'diger';
+
+/** Hisse senedi / yatırım fonu / ETF — isimlendirilebilir tek liste. */
+export interface YatirimKalemi {
   id: string;
-  kod: string; // örn. THYAO
-  lot: number;
-  fiyat: number; // TL, kullanıcı girer (v1'de otomatik çekilmez)
+  ad: string; // örn. THYAO, "Ak Portföy Teknoloji Fonu"
+  tur: YatirimTuru;
+  deger: number; // güncel toplam TL değeri (kullanıcı girer)
+}
+
+export type DovizKodu = 'USD' | 'EUR' | 'GBP' | 'diger';
+
+export interface DovizKalemi {
+  id: string;
+  kod: DovizKodu;
+  miktar: number; // döviz cinsinden
+  kur: number; // TL karşılığı (1 birim), elle girilir veya canlı çekilir
 }
 
 export interface Varliklar {
   nakit: number;
   banka: number;
   altinGram: number;
-  altinGramFiyat: number; // TL/gram, kullanıcı girer
-  hisseler: Hisse[];
-  fonEtf: number; // toplam güncel değer
+  altinGramFiyat: number; // TL/gram
+  gumusGram: number;
+  gumusGramFiyat: number; // TL/gram
+  yatirimlar: YatirimKalemi[]; // hisse + fon + ETF birlikte
+  dovizler: DovizKalemi[];
   kripto: number; // toplam güncel değer
+  bes: number; // bireysel emeklilik birikimi
+  alacaklar: number; // başkasına verilmiş borç
   diger: number;
+  /** Altın/gümüş/döviz fiyatlarının en son ne zaman güncellendiği (ISO tarih). */
+  fiyatGuncelleme: string | null;
 }
 
 export interface Gelir {
   maas: number;
   esMaas: number; // sadece evliyse sorulur
   ekGelir: number;
+  nafakaAlinan: number; // sadece boşanmışsa sorulur
   // kira geliri ayrıca tutulmaz: "kirada" durumundaki evlerden otomatik hesaplanır
 }
 
@@ -106,16 +128,20 @@ export interface EvcilGideri {
 export interface CocukGiderleri {
   bezMama: number; // 0-3 yaş çocuk varsa
   kresBakici: number; // 0-5 yaş çocuk varsa
-  okulKirtasiye: number; // 6-18 yaş çocuk varsa
-  harclik: number; // 6+ yaş çocuk varsa
+  okulKirtasiye: number; // 6-17 yaş çocuk varsa
+  harclik: number; // 6-17 yaş çocuk varsa
+  universite: number; // 18-25 yaş çocuk varsa (yurt/kira/harçlık)
 }
 
 export interface Giderler {
   sabit: SabitGiderler;
-  topluTasima: number; // araç yoksa sorulur
+  yillikSigortalar: number; // hayat/sağlık/DASK vb. poliçeler — yıllık girilir, aya bölünür
+  topluTasima: number; // araç olsa da olmasa da sorulur
   arac: AracGiderleri; // araç varsa sorulur
   evcil: EvcilGideri[]; // evcil hayvan başına
   cocuk: CocukGiderleri; // çocukların yaşlarına göre daralır
+  nafakaOdenen: number; // sadece boşanmışsa sorulur
+  esHarcligi: number; // eşe verilen aylık para — sadece evliyse sorulur
 }
 
 export type BorcTuru = 'konut' | 'tasit' | 'ihtiyac' | 'krediKarti' | 'diger';
@@ -125,6 +151,15 @@ export interface Borc {
   tur: BorcTuru;
   kalan: number; // kalan anapara — net değerden düşülür
   taksit: number; // aylık taksit — gidere eklenir
+}
+
+/** Taksitli alışveriş (telefon, beyaz eşya vb.) — isimlendirilebilir.
+ *  Kalan borç = aylık taksit × kalan ay olarak otomatik hesaplanır. */
+export interface TaksitliAlisveris {
+  id: string;
+  ad: string; // örn. "Telefon", "Buzdolabı"
+  aylikTaksit: number;
+  kalanAy: number;
 }
 
 export interface Profil {
@@ -137,6 +172,14 @@ export interface Profil {
   evciller: EvcilHayvan[];
 }
 
+/** Ay sonu anlık görüntüsü — trend grafikleri için (veri cihazda kalır). */
+export interface AylikKayit {
+  ay: string; // "2026-08"
+  puan: number;
+  netDeger: number;
+  akis: number; // aylık nakit akışı
+}
+
 export interface AppData {
   surum: number; // veri şeması sürümü (ileriye dönük taşıma için)
   kurulumTamam: boolean; // sihirbaz bitti mi
@@ -147,4 +190,6 @@ export interface AppData {
   gelir: Gelir;
   giderler: Giderler;
   borclar: Borc[];
+  taksitler: TaksitliAlisveris[];
+  gecmis: AylikKayit[];
 }

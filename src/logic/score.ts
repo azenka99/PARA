@@ -7,10 +7,8 @@ import {
   aylikGelir,
   aylikGider,
   aylikTaksitler,
-  altinDegeri,
-  gayrimenkulDegeri,
+  dagilimSepetleri,
   likitVarlik,
-  piyasaVarligi,
 } from './finance';
 import { VARSAYILAN_PUAN_AYARLARI, type PuanAyarlari } from './scoreConfig';
 
@@ -90,8 +88,8 @@ export function borcBileseni(veri: AppData, ayar: PuanAyarlari): PuanBileseni {
   const puan = Math.round(kirp(1 - oran / ayar.riskliBorcOrani) * agirlik);
   const aciklama =
     oran >= ayar.riskliBorcOrani
-      ? `Taksitlerin gelirinin ${yuzde(oran)}'ini götürüyor — ${yuzde(ayar.riskliBorcOrani)} üzeri riskli kabul edilir.`
-      : `Taksitlerin gelirinin ${yuzde(oran)}'ini götürüyor; ${yuzde(ayar.riskliBorcOrani)} riskli eşiğinin altındasın.`;
+      ? `Taksitlerin (kredi + taksitli alışveriş) gelirinin ${yuzde(oran)}'ini götürüyor — ${yuzde(ayar.riskliBorcOrani)} üzeri riskli kabul edilir.`
+      : `Taksitlerin (kredi + taksitli alışveriş) gelirinin ${yuzde(oran)}'ini götürüyor; ${yuzde(ayar.riskliBorcOrani)} riskli eşiğinin altındasın.`;
 
   return { anahtar: 'borc', baslik: 'Borç yükü', puan, agirlik, aciklama };
 }
@@ -119,8 +117,8 @@ export function acilFonBileseni(veri: AppData, ayar: PuanAyarlari): PuanBileseni
   const ayStr = ay >= 10 ? Math.round(ay).toString() : (Math.round(ay * 10) / 10).toString().replace('.', ',');
   const aciklama =
     ay >= ayar.hedefAcilFonAy
-      ? `Likit varlıkların (nakit + banka + altın) ${ayStr} aylık giderini karşılıyor — ${ayar.hedefAcilFonAy} ay hedefini tutturmuşsun.`
-      : `Likit varlıkların ${ayStr} aylık giderini karşılıyor, hedef ${ayar.hedefAcilFonAy} ay.`;
+      ? `Likit varlıkların (nakit + banka + döviz + altın/gümüş) ${ayStr} aylık giderini karşılıyor — ${ayar.hedefAcilFonAy} ay hedefini tutturmuşsun.`
+      : `Likit varlıkların (nakit + banka + döviz + altın/gümüş) ${ayStr} aylık giderini karşılıyor, hedef ${ayar.hedefAcilFonAy} ay.`;
 
   return { anahtar: 'acilFon', baslik: 'Acil durum fonu', puan, agirlik, aciklama };
 }
@@ -128,14 +126,9 @@ export function acilFonBileseni(veri: AppData, ayar: PuanAyarlari): PuanBileseni
 export function dagilimBileseni(veri: AppData, ayar: PuanAyarlari): PuanBileseni {
   const agirlik = ayar.agirliklar.dagilim;
 
-  // Dağılım sepetleri: nakit benzeri / altın / borsa-piyasa / gayrimenkul.
+  // Sepetler: nakit/banka, döviz, altın/gümüş, hisse-fon-kripto, BES, gayrimenkul.
   // Araçlar kişisel kullanım varlığı sayıldığı için çeşitlilik hesabına girmez.
-  const sepetler: Array<{ ad: string; deger: number }> = [
-    { ad: 'nakit ve banka', deger: veri.varliklar.nakit + veri.varliklar.banka },
-    { ad: 'altın', deger: altinDegeri(veri) },
-    { ad: 'borsa/fon/kripto', deger: piyasaVarligi(veri) },
-    { ad: 'gayrimenkul', deger: gayrimenkulDegeri(veri) },
-  ];
+  const sepetler = dagilimSepetleri(veri);
   const toplam = sepetler.reduce((t, s) => t + s.deger, 0);
 
   if (toplam <= 0) {
@@ -149,7 +142,7 @@ export function dagilimBileseni(veri: AppData, ayar: PuanAyarlari): PuanBileseni
   }
 
   // Herfindahl endeksi: paylar ne kadar tek kalemde toplanırsa 1'e yaklaşır.
-  // 4 sepette eşit dağılım HHI = 0.25 -> tam puan; tek sepet HHI = 1 -> 0 puan.
+  // Tüm sepetlere eşit dağılım -> tam puan; tek sepet -> 0 puan.
   const hhi = sepetler.reduce((t, s) => t + (s.deger / toplam) ** 2, 0);
   const nSepet = sepetler.length;
   const skor = kirp((1 - hhi) / (1 - 1 / nSepet));

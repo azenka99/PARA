@@ -1,9 +1,10 @@
 // Ana panel — kurulum sonrası her şey buradan güncellenir.
-import { useRef, useState } from 'react';
-import { useVeri } from '../state';
+import { useEffect, useRef, useState } from 'react';
+import { pinDogru, pinKaldir, pinKaydet, pinVarMi, useGizli, useTema, useVeri } from '../state';
 import { Sahne } from '../components/Scene';
 import { PuanDokumu } from '../components/ScoreCard';
 import { AvatarEditor } from '../components/AvatarEditor';
+import { HalkaGrafik, MiniTrend } from '../components/charts';
 import {
   AraclarFormu,
   BorclarFormu,
@@ -13,10 +14,12 @@ import {
   GelirFormu,
   GiderlerFormu,
   MedeniHalFormu,
+  TaksitlerFormu,
   VarliklarFormu,
 } from '../components/forms';
 import {
   Buton,
+  CipSecim,
   GizlilikNotu,
   Kart,
   MetinAlani,
@@ -30,7 +33,7 @@ import {
   netDeger,
   toplamBorc,
 } from '../logic/finance';
-import { tl } from '../logic/format';
+import { puanHesapla } from '../logic/score';
 import { varsayilanAvatar, varsayilanVeri } from '../model/defaults';
 import { veriSil, yedekIndir, yedekOku } from '../storage/storage';
 
@@ -38,32 +41,33 @@ type Sekme = 'manzara' | 'puan' | 'varliklar' | 'butce' | 'profil';
 
 const SEKMELER: Array<{ anahtar: Sekme; ad: string; ikon: string }> = [
   { anahtar: 'manzara', ad: 'Manzara', ikon: '🏞️' },
-  { anahtar: 'puan', ad: 'Puan', ikon: '⭐' },
-  { anahtar: 'varliklar', ad: 'Varlıklar', ikon: '💰' },
-  { anahtar: 'butce', ad: 'Bütçe', ikon: '🧾' },
-  { anahtar: 'profil', ad: 'Profil', ikon: '👤' },
+  { anahtar: 'puan', ad: 'Puan', ikon: '◐' },
+  { anahtar: 'varliklar', ad: 'Varlıklar', ikon: '◆' },
+  { anahtar: 'butce', ad: 'Bütçe', ikon: '☰' },
+  { anahtar: 'profil', ad: 'Profil', ikon: '●' },
 ];
 
 function OzetKutulari() {
   const { veri } = useVeri();
+  const { tutar } = useGizli();
   const akis = nakitAkisi(veri);
   return (
     <div className="ozet-izgara">
       <div className="ozet-kut">
         <div className="etiket">Net değer</div>
-        <div className={`deger ${netDeger(veri) >= 0 ? '' : 'negatif'}`}>{tl(netDeger(veri))}</div>
+        <div className={`deger ${netDeger(veri) >= 0 ? '' : 'negatif'}`}>{tutar(netDeger(veri))}</div>
       </div>
       <div className="ozet-kut">
         <div className="etiket">Aylık gelir</div>
-        <div className="deger">{tl(aylikGelir(veri))}</div>
+        <div className="deger">{tutar(aylikGelir(veri))}</div>
       </div>
       <div className="ozet-kut">
         <div className="etiket">Aylık gider</div>
-        <div className="deger">{tl(aylikGider(veri))}</div>
+        <div className="deger">{tutar(aylikGider(veri))}</div>
       </div>
       <div className="ozet-kut">
         <div className="etiket">Ay sonu kalan</div>
-        <div className={`deger ${akis >= 0 ? 'pozitif' : 'negatif'}`}>{tl(akis)}</div>
+        <div className={`deger ${akis >= 0 ? 'pozitif' : 'negatif'}`}>{tutar(akis)}</div>
       </div>
     </div>
   );
@@ -71,58 +75,66 @@ function OzetKutulari() {
 
 function ManzaraSekmesi() {
   const { veri } = useVeri();
+  const { tutar } = useGizli();
   const akis = nakitAkisi(veri);
   return (
     <>
       <h2 className="sekme-baslik">
-        Merhaba{veri.profil.ad ? `, ${veri.profil.ad}` : ''}! 👋
+        Merhaba{veri.profil.ad ? `, ${veri.profil.ad}` : ''}
       </h2>
       <Kart className="sahne-kart">
         <Sahne veri={veri} />
       </Kart>
       {akis < 0 && (
         <div className="yasal-uyari">
-          🌧️ Bu ay {tl(-akis)} açık veriyorsun — o yüzden manzaranda yağmur yağıyor.
+          🌧️ Bu ay {tutar(-akis)} açık veriyorsunuz — o yüzden manzaranızda yağmur yağıyor.
         </div>
       )}
       <OzetKutulari />
+      {veri.gecmis.length >= 2 && (
+        <Kart baslik="Net değer gelişimi" aciklama="Ay sonu kayıtlarından.">
+          <MiniTrend
+            degerler={veri.gecmis.map((g) => g.netDeger)}
+            etiketler={veri.gecmis.map((g) => g.ay)}
+          />
+        </Kart>
+      )}
     </>
   );
 }
 
+const GIDER_RENKLERI = ['#23456e', '#c08a2d', '#2e7d5e', '#3d7ea6', '#8a2f4f', '#b45f3c', '#5d6b81', '#4a4a68'];
+
 function PuanSekmesi() {
   const { veri } = useVeri();
   const dokum = giderDokumu(veri);
+  const dilimler = [
+    { ad: 'Sabit giderler', deger: dokum.sabit },
+    { ad: 'Kira', deger: dokum.kira },
+    { ad: 'Ulaşım', deger: dokum.ulasim },
+    { ad: 'Sigortalar', deger: dokum.sigorta },
+    { ad: 'Aile', deger: dokum.aile },
+    { ad: 'Evcil hayvanlar', deger: dokum.evcil },
+    { ad: 'Çocuklar', deger: dokum.cocuk },
+    { ad: 'Taksitler', deger: dokum.taksitler },
+  ].map((d, i) => ({ ...d, renk: GIDER_RENKLERI[i % GIDER_RENKLERI.length] }));
+
   return (
     <>
-      <h2 className="sekme-baslik">Finansal puanın</h2>
+      <h2 className="sekme-baslik">Finansal puanınız</h2>
       <Kart>
         <PuanDokumu veri={veri} />
       </Kart>
-      <Kart baslik="🧾 Aylık gider dökümü" aciklama="Puanın nasıl hesaplandığını görmek için.">
-        <table style={{ width: '100%', fontWeight: 700, fontSize: 14.5 }}>
-          <tbody>
-            {[
-              ['Sabit giderler', dokum.sabit],
-              ['Kira', dokum.kira],
-              ['Ulaşım', dokum.ulasim],
-              ['Evcil hayvanlar', dokum.evcil],
-              ['Çocuklar', dokum.cocuk],
-              ['Kredi taksitleri', dokum.taksitler],
-            ]
-              .filter(([, deger]) => (deger as number) > 0)
-              .map(([ad, deger]) => (
-                <tr key={ad as string}>
-                  <td style={{ padding: '6px 0' }}>{ad as string}</td>
-                  <td style={{ textAlign: 'right' }}>{tl(deger as number)}</td>
-                </tr>
-              ))}
-            <tr style={{ borderTop: '2px solid var(--cizgi)' }}>
-              <td style={{ padding: '8px 0' }}>Toplam</td>
-              <td style={{ textAlign: 'right', color: 'var(--mor)' }}>{tl(dokum.toplam)}</td>
-            </tr>
-          </tbody>
-        </table>
+      {veri.gecmis.length >= 2 && (
+        <Kart baslik="Puan gelişimi">
+          <MiniTrend
+            degerler={veri.gecmis.map((g) => g.puan)}
+            etiketler={veri.gecmis.map((g) => g.ay)}
+          />
+        </Kart>
+      )}
+      <Kart baslik="Aylık gider dağılımı" aciklama="Puanın nasıl hesaplandığını görmek için.">
+        <HalkaGrafik dilimler={dilimler} />
       </Kart>
       <YasalUyari />
     </>
@@ -131,47 +143,123 @@ function PuanSekmesi() {
 
 function VarliklarSekmesi() {
   const { veri } = useVeri();
+  const { tutar } = useGizli();
   return (
     <>
-      <h2 className="sekme-baslik">Varlıkların</h2>
+      <h2 className="sekme-baslik">Varlıklarınız</h2>
       <OzetKutulari />
-      <Kart baslik="💵 Nakit ve yatırımlar">
+      <Kart baslik="Birikimler ve yatırımlar">
         <VarliklarFormu />
       </Kart>
-      <Kart baslik="🏠 Evler">
+      <Kart baslik="Evler">
         <EvlerFormu />
       </Kart>
-      <Kart baslik="🚗 Araçlar">
+      <Kart baslik="Araçlar">
         <AraclarFormu />
+      </Kart>
+      <Kart
+        baslik="Borçlar"
+        aciklama={toplamBorc(veri) > 0 ? `Toplam kalan borç: ${tutar(toplamBorc(veri))}` : undefined}
+      >
+        <BorclarFormu />
+        <div style={{ height: 10 }} />
+        <TaksitlerFormu />
       </Kart>
     </>
   );
 }
 
 function ButceSekmesi() {
-  const { veri } = useVeri();
   return (
     <>
-      <h2 className="sekme-baslik">Bütçen</h2>
+      <h2 className="sekme-baslik">Bütçeniz</h2>
       <OzetKutulari />
-      <Kart baslik="💸 Gelir">
+      <Kart baslik="Gelir">
         <GelirFormu />
       </Kart>
-      <Kart baslik="🧾 Giderler">
+      <Kart baslik="Giderler">
         <GiderlerFormu />
-      </Kart>
-      <Kart
-        baslik="💳 Borçlar"
-        aciklama={veri.borclar.length > 0 ? `Toplam kalan borç: ${tl(toplamBorc(veri))}` : undefined}
-      >
-        <BorclarFormu />
       </Kart>
     </>
   );
 }
 
+function PinAyari() {
+  const [pinli, setPinli] = useState(() => pinVarMi());
+  const [mevcut, setMevcut] = useState('');
+  const [yeni, setYeni] = useState('');
+  const [mesaj, setMesaj] = useState<string | null>(null);
+
+  const gecerli = (p: string) => /^\d{4,6}$/.test(p);
+
+  return (
+    <div>
+      <p className="kart-aciklama">
+        PIN, uygulama açılırken sorulur. Unutursanız tek çıkış yolu verileri sıfırlamaktır —
+        bu yüzden önce yedek almanızı öneririz.
+      </p>
+      {pinli && (
+        <MetinAlani
+          etiket="Mevcut PIN"
+          deger={mevcut}
+          placeholder="••••"
+          onDegis={(s) => setMevcut(s.replace(/\D/g, '').slice(0, 6))}
+        />
+      )}
+      <MetinAlani
+        etiket={pinli ? 'Yeni PIN (değiştirmek için)' : 'PIN oluştur (4-6 rakam)'}
+        deger={yeni}
+        placeholder="örn. 1907"
+        onDegis={(s) => setYeni(s.replace(/\D/g, '').slice(0, 6))}
+      />
+      <div className="satir">
+        <Buton
+          kucuk
+          onClick={async () => {
+            if (!gecerli(yeni)) {
+              setMesaj('PIN 4-6 rakamdan oluşmalı.');
+              return;
+            }
+            if (pinli && !(await pinDogru(mevcut))) {
+              setMesaj('Mevcut PIN yanlış.');
+              return;
+            }
+            await pinKaydet(yeni);
+            setPinli(true);
+            setMevcut('');
+            setYeni('');
+            setMesaj('✓ PIN kaydedildi.');
+          }}
+        >
+          {pinli ? 'PIN değiştir' : 'PIN oluştur'}
+        </Buton>
+        {pinli && (
+          <Buton
+            renk="golgesiz"
+            kucuk
+            onClick={async () => {
+              if (!(await pinDogru(mevcut))) {
+                setMesaj('Mevcut PIN yanlış.');
+                return;
+              }
+              pinKaldir();
+              setPinli(false);
+              setMevcut('');
+              setMesaj('PIN kaldırıldı.');
+            }}
+          >
+            PIN kaldır
+          </Buton>
+        )}
+      </div>
+      {mesaj && <span className="alan-ipucu">{mesaj}</span>}
+    </div>
+  );
+}
+
 function ProfilSekmesi() {
   const { veri, degistir, sifirla } = useVeri();
+  const { tema, setTema } = useTema();
   const dosyaRef = useRef<HTMLInputElement>(null);
   const [mesaj, setMesaj] = useState<string | null>(null);
   const [esDuzenle, setEsDuzenle] = useState(false);
@@ -179,9 +267,9 @@ function ProfilSekmesi() {
   return (
     <>
       <h2 className="sekme-baslik">Profil ve ayarlar</h2>
-      <Kart baslik="🎨 Karakterin">
+      <Kart baslik="Karakteriniz">
         <MetinAlani
-          etiket="Adın"
+          etiket="Adınız"
           deger={veri.profil.ad}
           onDegis={(s) => degistir((v) => ({ ...v, profil: { ...v.profil, ad: s } }))}
         />
@@ -190,12 +278,12 @@ function ProfilSekmesi() {
           onDegis={(c) => degistir((v) => ({ ...v, profil: { ...v.profil, avatar: c } }))}
         />
       </Kart>
-      <Kart baslik="💍 Medeni durum">
+      <Kart baslik="Medeni durum">
         <MedeniHalFormu />
         {veri.profil.medeniHal === 'evli' && (
           <>
             <Buton renk="golgesiz" kucuk onClick={() => setEsDuzenle(!esDuzenle)}>
-              {esDuzenle ? 'Eş karakterini gizle' : '🎨 Eş karakterini düzenle'}
+              {esDuzenle ? 'Eş karakterini gizle' : 'Eş karakterini düzenle'}
             </Buton>
             {esDuzenle && (
               <div style={{ marginTop: 12 }}>
@@ -208,23 +296,38 @@ function ProfilSekmesi() {
           </>
         )}
       </Kart>
-      <Kart baslik="🧒 Çocuklar">
+      <Kart baslik="Çocuklar">
         <CocuklarFormu />
       </Kart>
-      <Kart baslik="🐾 Evcil hayvanlar">
+      <Kart baslik="Evcil hayvanlar">
         <EvcillerFormu />
       </Kart>
 
+      <Kart baslik="Görünüm">
+        <CipSecim
+          etiket="Tema"
+          secenekler={[
+            { deger: 'sistem', ad: 'Sistemle aynı' },
+            { deger: 'acik', ad: 'Açık' },
+            { deger: 'koyu', ad: 'Koyu' },
+          ]}
+          deger={tema}
+          onDegis={setTema}
+        />
+      </Kart>
+
+      <Kart baslik="Güvenlik — PIN kilidi">
+        <PinAyari />
+      </Kart>
+
       <Kart
-        baslik="💾 Yedekleme"
-        aciklama="Verilerin yalnızca bu cihazda durur. Dosya olarak yedek alıp başka cihazda geri yükleyebilirsin."
+        baslik="Yedekleme"
+        aciklama="Verileriniz yalnızca bu cihazda durur. Dosya olarak yedek alıp başka cihazda geri yükleyebilirsiniz."
       >
         <div className="satir">
-          <Buton renk="nane" onClick={() => yedekIndir(veri)}>
-            ⬇️ Yedeği indir
-          </Buton>
+          <Buton onClick={() => yedekIndir(veri)}>⬇ Yedeği indir</Buton>
           <Buton renk="golgesiz" onClick={() => dosyaRef.current?.click()}>
-            ⬆️ Yedekten geri yükle
+            ⬆ Yedekten geri yükle
           </Buton>
         </div>
         <input
@@ -239,19 +342,19 @@ function ProfilSekmesi() {
             const okunan = await yedekOku(dosya);
             if (okunan) {
               sifirla(okunan);
-              setMesaj('✅ Yedek başarıyla geri yüklendi.');
+              setMesaj('✓ Yedek başarıyla geri yüklendi.');
             } else {
-              setMesaj('❌ Bu dosya geçerli bir Manzara yedeği değil.');
+              setMesaj('✗ Bu dosya geçerli bir PARA yedeği değil.');
             }
           }}
         />
-        {mesaj && <p style={{ fontWeight: 700, marginTop: 10 }}>{mesaj}</p>}
+        {mesaj && <p style={{ fontWeight: 600, marginTop: 10, fontSize: 13.5 }}>{mesaj}</p>}
       </Kart>
 
-      <Kart baslik="🧹 Baştan başla">
+      <Kart baslik="Baştan başla">
         <p className="kart-aciklama">
-          Tüm verilerini bu cihazdan siler ve kurulum sihirbazını yeniden başlatır. Geri alınamaz —
-          önce yedek almak isteyebilirsin.
+          Tüm verilerinizi bu cihazdan siler ve kurulum sihirbazını yeniden başlatır. Geri alınamaz —
+          önce yedek almak isteyebilirsiniz.
         </p>
         <Buton
           renk="tehlike"
@@ -268,15 +371,35 @@ function ProfilSekmesi() {
 
       <GizlilikNotu />
       <YasalUyari />
-      <p style={{ textAlign: 'center', color: 'var(--metin-soluk)', fontSize: 13 }}>
-        Manzara v0.1 — Faz 1 (MVP)
+      <p style={{ textAlign: 'center', color: 'var(--metin-soluk)', fontSize: 12.5 }}>
+        PARA v0.2 — Faz 1
       </p>
     </>
   );
 }
 
 export function Panel() {
+  const { veri, degistir } = useVeri();
   const [sekme, setSekme] = useState<Sekme>('manzara');
+
+  // Ay sonu anlık görüntüsü: her ayın kaydı güncel tutulur, ay değişince yeni kayıt açılır.
+  useEffect(() => {
+    const ay = new Date().toISOString().slice(0, 7);
+    const puan = puanHesapla(veri).toplam;
+    const nd = netDeger(veri);
+    const ak = nakitAkisi(veri);
+    degistir((v) => {
+      const g = [...v.gecmis];
+      const son = g[g.length - 1];
+      if (son && son.ay === ay) {
+        if (son.puan === puan && son.netDeger === nd && son.akis === ak) return v;
+        g[g.length - 1] = { ay, puan, netDeger: nd, akis: ak };
+      } else {
+        g.push({ ay, puan, netDeger: nd, akis: ak });
+      }
+      return { ...v, gecmis: g.slice(-36) };
+    });
+  }, [veri, degistir]);
 
   return (
     <>

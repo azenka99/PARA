@@ -57,10 +57,12 @@ describe('borç bileşeni', () => {
     expect(bilesen(v, 'borc').puan).toBe(0);
   });
 
-  it('%20 borç yükünde yarı puan (doğrusal)', () => {
+  it('taksitli alışverişler de borç yüküne dahildir', () => {
     const v = varsayilanVeri();
     v.gelir.maas = 100000;
-    v.borclar = [{ id: yeniId(), tur: 'ihtiyac', kalan: 1, taksit: 20000 }];
+    v.borclar = [{ id: yeniId(), tur: 'ihtiyac', kalan: 1, taksit: 10000 }];
+    v.taksitler = [{ id: yeniId(), ad: 'TV', aylikTaksit: 10000, kalanAy: 4 }];
+    // %20 borç yükü -> yarı puan
     expect(bilesen(v, 'borc').puan).toBe(13); // 12.5 yuvarlanır
   });
 });
@@ -74,20 +76,21 @@ describe('acil durum fonu bileşeni', () => {
     expect(bilesen(v, 'acilFon').puan).toBe(25);
   });
 
+  it('döviz ve gümüş likit varlığa dahildir', () => {
+    const v = varsayilanVeri();
+    v.giderler.sabit.market = 10000;
+    v.varliklar.dovizler = [{ id: yeniId(), kod: 'USD', miktar: 1000, kur: 30 }]; // 30.000
+    v.varliklar.gumusGram = 750;
+    v.varliklar.gumusGramFiyat = 40; // 30.000 -> toplam 60.000 = 6 ay
+    expect(bilesen(v, 'acilFon').puan).toBe(25);
+  });
+
   it('3 aylık fonla yarı puan', () => {
     const v = varsayilanVeri();
     v.gelir.maas = 100000;
     v.giderler.sabit.market = 50000;
     v.varliklar.banka = 150000;
     expect(bilesen(v, 'acilFon').puan).toBe(13); // 12.5 yuvarlanır
-  });
-
-  it('altın likit varlığa dahildir', () => {
-    const v = varsayilanVeri();
-    v.giderler.sabit.market = 10000;
-    v.varliklar.altinGram = 20;
-    v.varliklar.altinGramFiyat = 3000; // 60.000 = 6 ay
-    expect(bilesen(v, 'acilFon').puan).toBe(25);
   });
 });
 
@@ -100,12 +103,14 @@ describe('dağılım bileşeni', () => {
     expect(b.aciklama).toContain('tek kalemde');
   });
 
-  it('dört sepete eşit dağılım tam puan alır', () => {
+  it('altı sepete eşit dağılım tam puan alır', () => {
     const v = varsayilanVeri();
     v.varliklar.banka = 100000;
+    v.varliklar.dovizler = [{ id: yeniId(), kod: 'USD', miktar: 2500, kur: 40 }];
     v.varliklar.altinGram = 100;
     v.varliklar.altinGramFiyat = 1000;
-    v.varliklar.fonEtf = 100000;
+    v.varliklar.yatirimlar = [{ id: yeniId(), ad: 'Fon', tur: 'fon', deger: 100000 }];
+    v.varliklar.bes = 100000;
     v.evler = [{ id: yeniId(), durum: 'yazlik', deger: 100000, aylikKira: 0 }];
     expect(bilesen(v, 'dagilim').puan).toBe(20);
   });
@@ -121,7 +126,7 @@ describe('toplam puan', () => {
     v.gelir.maas = 100000;
     v.giderler.sabit.market = 60000;
     v.varliklar.banka = 200000;
-    v.varliklar.fonEtf = 150000;
+    v.varliklar.yatirimlar = [{ id: yeniId(), ad: 'Fon', tur: 'fon', deger: 150000 }];
     const s = puanHesapla(v);
     expect(s.toplam).toBe(s.bilesenler.reduce((t, b) => t + b.puan, 0));
     expect(s.toplam).toBeGreaterThanOrEqual(0);

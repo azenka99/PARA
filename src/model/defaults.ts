@@ -23,19 +23,19 @@ export const SAC_RENKLERI = [
   '#c98a3d',
   '#e8c56a',
   '#b0b0b8',
-  '#d95c8a',
-  '#7c5cff',
+  '#a34d6e',
+  '#3c4a63',
 ];
 
 export const KIYAFET_RENKLERI = [
-  '#7c5cff',
-  '#ff7ab8',
-  '#ffc93c',
-  '#3ddc97',
-  '#5cc8ff',
-  '#ff8a5c',
-  '#5c6bff',
-  '#2d3142',
+  '#31548e',
+  '#8a2f4f',
+  '#c98f2b',
+  '#2e7d5e',
+  '#3d7ea6',
+  '#b45f3c',
+  '#4a4a68',
+  '#26303f',
 ];
 
 export function varsayilanAvatar(): AvatarConfig {
@@ -49,7 +49,7 @@ export function varsayilanAvatar(): AvatarConfig {
   };
 }
 
-export const VERI_SURUMU = 1;
+export const VERI_SURUMU = 2;
 
 export function varsayilanVeri(): AppData {
   return {
@@ -71,12 +71,17 @@ export function varsayilanVeri(): AppData {
       banka: 0,
       altinGram: 0,
       altinGramFiyat: 0,
-      hisseler: [],
-      fonEtf: 0,
+      gumusGram: 0,
+      gumusGramFiyat: 0,
+      yatirimlar: [],
+      dovizler: [],
       kripto: 0,
+      bes: 0,
+      alacaklar: 0,
       diger: 0,
+      fiyatGuncelleme: null,
     },
-    gelir: { maas: 0, esMaas: 0, ekGelir: 0 },
+    gelir: { maas: 0, esMaas: 0, ekGelir: 0, nafakaAlinan: 0 },
     giderler: {
       sabit: {
         faturalar: 0,
@@ -88,11 +93,16 @@ export function varsayilanVeri(): AppData {
         giyim: 0,
         diger: 0,
       },
+      yillikSigortalar: 0,
       topluTasima: 0,
       arac: { yakit: 0, otopark: 0, yillikSigortaBakim: 0 },
       evcil: [],
-      cocuk: { bezMama: 0, kresBakici: 0, okulKirtasiye: 0, harclik: 0 },
+      cocuk: { bezMama: 0, kresBakici: 0, okulKirtasiye: 0, harclik: 0, universite: 0 },
+      nafakaOdenen: 0,
+      esHarcligi: 0,
     },
     borclar: [],
+    taksitler: [],
+    gecmis: [],
   };
 }

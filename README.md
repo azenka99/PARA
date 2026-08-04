@@ -1,35 +1,67 @@
-# Manzara 🏞️
+# PARA
 
-Kişisel finans uygulaması — nakit, banka, altın, hisse, ev, araç, borç, gelir ve giderlerini
-girersin; karşılığında **gerekçeli bir finansal puan** ve kendi hayatının **görsel bir
-"manzarasını"** alırsın: karakterin, ailen, evin, araban, evcil hayvanın… Ay sonu açık
-veriyorsan manzaranda yağmur yağar; puanın yüksekse güneş açar. ☀️🌧️
+Kişisel finans uygulaması — nakit, banka, altın, gümüş, döviz, hisse/fon, BES, ev, araç,
+borç, gelir ve giderlerinizi girersiniz; karşılığında **gerekçeli bir finansal puan** ve
+hayatınızın **görsel bir manzarasını** alırsınız: karakteriniz, aileniz, evleriniz,
+araçlarınız, evcil hayvanınız… Ay sonu açık veriyorsanız manzaranızda yağmur yağar;
+puanınız yüksekse güneş açar.
 
-> ⚠️ Manzara bir yatırım danışmanı değildir. Uygulamadaki hiçbir puan veya açıklama
+> ⚠️ PARA bir yatırım danışmanı değildir. Uygulamadaki hiçbir puan veya açıklama
 > yatırım tavsiyesi değildir; tüm sonuçlar kullanıcının kendi girdiği verilerin
 > matematiksel özetidir.
 
 ---
 
-## Bu sürümde neler var? (Faz 1 — MVP)
+## Özellikler
 
-- 🧙 **Adım adım kurulum sihirbazı** — tek uzun form yok; karakter, aile, ev, araç,
-  varlık, gelir, gider, borç adım adım sorulur.
-- 🎨 **Karakter özelleştirme** — cilt tonu, saç stili/rengi, beden tipi (görsel olarak
-  gerçekten farklılaşır), kıyafet rengi, aksesuarlar. Evliysen eşin için de aynı derinlikte.
-- 🔍 **Profil filtreleme** — çocuk yoksa bebek gideri sorulmaz; araç yoksa yakıt yerine
-  toplu taşıma sorulur; evcil hayvan yoksa mama/veteriner soruları hiç görünmez, varsa
-  giderler hayvanın adıyla etiketlenir.
-- 📊 **Net değer, aylık nakit akışı ve 100 üzerinden finansal puan** — dört bileşen
-  (tasarruf oranı, borç yükü, acil durum fonu, varlık dağılımı), her biri "neden bu puan"
-  açıklamasıyla. Ağırlık ve eşikler `src/logic/scoreConfig.ts` dosyasında — koda gömülü değil.
-- 🏞️ **Görsel sahne** — evler durumuna göre (kiracı / ev sahibi / kirada / yazlık) farklı
-  çizilir, araçlar sol üstte çapraz park alanında dizilir, altın külçe yığını miktara göre
-  büyür, yatırımlar büyüyen bir ağaç olur, hava durumu finansal duruma tepki verir.
-- 💾 **Veri yalnızca cihazda** — hiçbir sunucuya hiçbir şey gönderilmez. Tek dokunuşla
-  JSON dosyası olarak yedek alınır / geri yüklenir.
-- 📱 **PWA** — telefonda "Ana ekrana ekle" ile normal bir uygulama gibi açılır,
-  çevrimdışı çalışır.
+**Kurulum ve profil**
+- Adım adım kurulum sihirbazı; sorular profile göre daralır (çocuk yoksa bebek gideri
+  sorulmaz, evcil hayvan yoksa mama/veteriner soruları görünmez).
+- Karakter özelleştirme (cilt tonu, saç, beden tipi, kıyafet, aksesuar) — evliyseniz
+  eşiniz için de.
+- Çocuklar yaş bantlarına göre sorulur: bebek (0-3), kreş (0-5), okul (6-17),
+  üniversite (18-25).
+
+**Varlıklar**
+- Nakit, banka, altın ve **gümüş** (gram + gram fiyatı), **döviz** (USD/EUR/GBP…),
+  **hisse senetleri ve yatırım fonları** (isimlendirilebilir kalemler), kripto, **BES**,
+  **alacaklar**, evler (kiracı/sahibi/kirada/yazlık) ve araçlar (**araba, motosiklet**…).
+- Arabalarda marka/model seçince ortalama ikinci el değeri önerilir
+  (`public/data/arac-degerleri.json` — kod değişmeden güncellenebilir).
+- **Canlı fiyat çekme (deneysel):** altın/gümüş/döviz fiyatlarını ücretsiz bir kamu
+  kaynağından tek tuşla günceller; kaynak yanıt vermezse elle giriş sürer. Fiyatlar
+  60 günden eskiyse nazikçe hatırlatır.
+
+**Gelir ve giderler**
+- Maaş, eş geliri, ek gelir, kira geliri (otomatik), **alınan nafaka** (boşanmışlar).
+- Sabit giderler, **yıllık sigorta poliçeleri**, ulaşım (araç giderleri + **araç olsa da
+  toplu taşıma**), evcil hayvan giderleri (isimle etiketli), çocuk giderleri,
+  **ödenen nafaka** (boşanmışlar), **eşe verilen aylık para** (evliler).
+- **Taksitli alışverişler:** isim + aylık taksit + kalan ay; kalan borç otomatik
+  hesaplanır, süre bitince gider kendiliğinden düşer.
+
+**Analiz**
+- Net değer, aylık nakit akışı, 100 üzerinden gerekçeli finansal puan (tasarruf oranı,
+  borç yükü, acil durum fonu, 6 sepetli varlık dağılımı). Ağırlık ve eşikler
+  `src/logic/scoreConfig.ts` dosyasında — koda gömülü değil.
+- **Aylık geçmiş:** puan ve net değer her ay otomatik kaydedilir, trend grafikleriyle
+  gösterilir (veri cihazda kalır).
+- Gider dağılımı halka grafiği.
+
+**Manzara**
+- Olgun, profesyonel illüstrasyon dili. Evler durumuna göre **farklı mimarilerde**
+  çizilir ve altlarında yüksek kontrastlı etiket taşır (EVİM / KİRA / KİRADA / YAZLIK).
+- Araçlar çapraz park alanında; motosikletler kendi çizimiyle.
+- Sahneye entegre **portföy paneli**: varlık dağılımı halka grafiği + net değer.
+- Hava durumu finansal duruma tepki verir; **ölçülü animasyonlar** (bulut süzülmesi,
+  yağmur, baca dumanı, yıldız ışıltısı) — sistemin "hareketi azalt" tercihine uyar.
+
+**Gizlilik ve kullanım**
+- Veri yalnızca cihazda (`localStorage`); JSON dosyası olarak yedek alma / geri yükleme.
+- **PIN kilidi** (isteğe bağlı), **tutarları gizleme** (göz düğmesi), **karanlık mod**
+  (açık / koyu / sisteme uy).
+- Sayı girişlerinde binlik ayraç (1.250.000).
+- PWA: telefona kurulabilir, çevrimdışı çalışır. Türkçe + TL.
 
 ## Nasıl yayınlanır? (ücretsiz)
 
@@ -39,15 +71,12 @@ derler, testleri koşar ve sonucu `gh-pages` dalına iter; GitHub Pages siteyi
 
 Bu adres telefonda açılıp "Ana ekrana ekle" denerek uygulama gibi kurulabilir.
 
-Not: Site hiç açılmazsa GitHub'da **Settings → Pages** altında kaynak olarak
-`gh-pages` dalının seçili olduğunu kontrol etmek yeterlidir.
-
 ## Geliştirici notları
 
 ```bash
 npm install     # bağımlılıkları kur
 npm run dev     # geliştirme sunucusu (http://localhost:5173)
-npm test        # hesap motoru birim testleri (30 test)
+npm test        # hesap motoru + veri göçü birim testleri
 npm run build   # üretim derlemesi (dist/)
 ```
 
@@ -55,56 +84,41 @@ npm run build   # üretim derlemesi (dist/)
 
 | Karar | Seçim | Neden |
 |---|---|---|
-| Platform | **Web / PWA** | Maliyet 0 TL; link paylaşarak anında dağıtım; telefona uygulama gibi kurulabiliyor. Doğrulandıktan sonra aynı kod Capacitor gibi bir sarmalayıcıyla Play Store'a taşınabilir (25 $ tek seferlik). Spesifikasyonun 9. bölümündeki öneriyle uyumlu. |
-| Veri saklama | **Yalnızca cihazda** (`localStorage`) + dosya ile yedekleme | Veriler son derece hassas (tüm mal varlığı). Cihazda kalınca sunucu maliyeti ve KVKK riski büyük ölçüde ortadan kalkıyor. Bulut senkronu Faz 3'te uçtan uca şifrelemeyle eklenebilir. |
-| Arayüz teknolojisi | **React + TypeScript + Vite** | Bileşen tabanlı yapı; sihirbaz adımları ile paneldeki formlar aynı bileşenleri paylaşıyor. TypeScript finansal hesaplarda tip hatalarını derleme anında yakalıyor. Hepsi ücretsiz ve açık kaynak. |
-| Hesap motoru | Arayüzden bağımsız **saf fonksiyonlar** (`src/logic/`) | Birim testleriyle doğrulanabilir; Faz 2'nin senaryo motoru ("araba alsam ne olur") aynı fonksiyonları hipotetik veriyle çağırarak kurulabilir. |
-| Grafikler | **Parametrik SVG** (hazır görsel yok) | Karakter/sahne her kombinasyonda dinamik üretiliyor; dosya boyutu küçük kalıyor; ileride animasyon eklemek kolay. |
-| Test stratejisi | Hesap motoruna birim testi (Vitest), arayüze manuel/görsel doğrulama | Paranın hesaplandığı yer hataya en az tahammülü olan yer. Arayüz testi bu aşamada maliyetine değmez. |
-| CI/CD | Sadece **yayınlama iş akışı** (GitHub Pages) | Bu erken aşamada karmaşık bir hat gereksiz; ama yayın öncesi testler otomatik koşuyor. |
-| Araç piyasa değerleri | Ayrı veri dosyası: `public/data/arac-degerleri.json` | Koda gömülü değil; dosyadaki değerler ve `guncellemeTarihi` güncellenerek tazelenir, kullanıcıya öneri tarihi gösterilir. Kullanıcı her zaman üzerine yazabilir. İleride bir API'ye bağlanabilir. |
-
-### Açık soruların durumu (Bölüm 12)
-
-Spesifikasyondaki açık sorular kullanıcıya soruldu; yanıt alınamadığı için belgenin kendi
-önerdiği, **maliyeti sıfır ve geri dönüşü kolay** seçeneklerle ilerlendi:
-
-1. **Platform:** Web/PWA ile başlandı (Bölüm 9'un önerisi). Mobil mağazalar Faz 3.
-2. **Veri saklama:** Yalnızca cihazda (Bölüm 7'nin önerisi) + yedekleme özelliği.
-3. **AI yorumlama:** Faz 1'e alınmadı (Bölüm 12'de "önerilen" seçenek). Puan gerekçeleri
-   kural tabanlı Türkçe metinlerle üretiliyor.
-4. **İsim:** "Manzara" çalışma adı olarak kullanıldı; değiştirmek tek yerden mümkün.
-5. **Profil:** Tek profil (eş/çocuklar bu profilin içinde). Veri tek pakette tutulduğu
-   için çoklu profil ileride mimariyi bozmadan eklenebilir.
-6. **Yerelleştirme:** Yalnızca Türkçe + TL.
-
-Bu kararların hepsi sonradan değiştirilebilir; hiçbiri ücretli bir servise bağımlılık
-yaratmaz.
+| Platform | **Web / PWA** | Maliyet 0 TL; link paylaşarak anında dağıtım; telefona uygulama gibi kurulabiliyor. Doğrulandıktan sonra aynı kod Capacitor gibi bir sarmalayıcıyla Play Store'a taşınabilir (25 $ tek seferlik). |
+| Veri saklama | **Yalnızca cihazda** + dosya ile yedekleme | Veriler son derece hassas (tüm mal varlığı). Cihazda kalınca sunucu maliyeti ve KVKK riski büyük ölçüde ortadan kalkıyor. Bulut senkronu Faz 3'te uçtan uca şifrelemeyle eklenebilir. |
+| Arayüz teknolojisi | **React + TypeScript + Vite** | Bileşen tabanlı yapı; sihirbaz adımları ile paneldeki formlar aynı bileşenleri paylaşıyor. TypeScript finansal hesaplarda tip hatalarını derleme anında yakalıyor. |
+| Hesap motoru | Arayüzden bağımsız **saf fonksiyonlar** (`src/logic/`) | Birim testleriyle doğrulanabilir; Faz 2'nin senaryo motoru aynı fonksiyonları hipotetik veriyle çağırarak kurulacak. |
+| Grafikler | **Parametrik SVG** (hazır görsel yok) | Karakter/sahne her kombinasyonda dinamik üretiliyor; dosya boyutu küçük; animasyonlar CSS ile, ek kütüphane yok. |
+| Canlı fiyatlar | Ücretsiz kamu kaynağı + **zarif geri düşüş** | Ücretli API bağımlılığı yok. Kaynak çalışmazsa uygulama hiç etkilenmez, elle giriş sürer. Kaynak `src/logic/prices.ts` içinde tek yerde tanımlı. |
+| Veri şeması göçü | `surum` alanı + `veriTasima()` | Eski sürümde kaydedilmiş veriler (örn. "Manzara" dönemindeki) açılışta otomatik yeni şemaya taşınır; kullanıcı hiçbir şey kaybetmez. |
+| Test stratejisi | Motor + göç birim testleri (Vitest), arayüze görsel doğrulama | Paranın hesaplandığı yer hataya en az tahammülü olan yer. |
+| CI/CD | Sadece yayınlama iş akışı | Yayın öncesi testler otomatik koşuyor; bu aşamada daha fazlası gereksiz. |
 
 ### Klasör yapısı
 
 ```
 src/
-  model/      → veri modeli (types.ts) ve varsayılanlar
-  logic/      → finansal hesap motoru + puan motoru + testleri (arayüzden bağımsız)
-  storage/    → cihaz içi saklama, yedek alma / geri yükleme
-  components/ → avatar, sahne, puan kartı, formlar, ortak arayüz parçaları
+  model/      → veri modeli (types.ts), varsayılanlar
+  logic/      → finansal hesap motoru, puan motoru, canlı fiyatlar + testler
+  storage/    → cihaz içi saklama, sürüm göçü, yedekleme + testler
+  components/ → avatar, sahne, grafikler, puan kartı, formlar, ortak arayüz
   onboarding/ → kurulum sihirbazı
   dashboard/  → ana panel (sekmeler)
 public/
-  data/arac-degerleri.json → araç piyasa ortalamaları (güncellenebilir veri dosyası)
-  fonts/                   → yerel fontlar (çevrimdışı çalışma için)
+  data/arac-degerleri.json → araç piyasa ortalamaları (güncellenebilir veri)
+  fonts/                   → yerel fontlar (Manrope + Inter, çevrimdışı çalışır)
   sw.js, manifest.webmanifest, icons/ → PWA parçaları
 ```
 
-### Faz 2 / Faz 3 için notlar
+### Faz 2 için notlar
 
-- **Senaryo motoru:** `src/logic/finance.ts` saf fonksiyonlardan oluşur; "bu arabayı
-  alırsam" senaryosu, mevcut `AppData`'nın bir kopyasını değiştirip aynı fonksiyonlardan
-  geçirmekle kurulur. Kredi taksit formülü eklemek yeterli.
-- **Günlük harcama takibi:** `AppData`'ya `hareketler: Hareket[]` alanı eklenir;
-  `veriTasima` (şema taşıma) mekanizması eski kayıtları otomatik yeni şemaya taşır.
-- **Bulut senkronu:** `storage/storage.ts` tek geçiş noktasıdır; buraya uçtan uca
-  şifreli bir eşitleme katmanı eklenebilir. KVKK değerlendirmesi bu aşamada yapılmalı.
-- **Canlı fiyatlar:** Altın/hisse fiyat alanları zaten ayrı tutuluyor; bir fiyat
-  servisi bağlandığında yalnızca bu alanları beslemek yeterli.
+- **Senaryo motoru** ("bu arabayı alsam ne olur"): `src/logic/finance.ts` saf
+  fonksiyonlardan oluşur; mevcut `AppData`'nın kopyası değiştirilip aynı fonksiyonlardan
+  geçirilerek kurulur. Kredi taksit formülü eklemek yeterli.
+- **Araç marka/model API'si**: kullanıcı talebi — Türkiye ikinci el piyasasını kapsayan
+  uygun (tercihen ücretsiz/uygun maliyetli) bir API araştırılıp `AracDegerSaglayici`
+  katmanına bağlanacak; mevcut JSON dosyası geri düşüş olarak kalacak.
+- **Günlük harcama takibi**: `AppData`'ya `hareketler` alanı eklenir; `veriTasima`
+  eski kayıtları otomatik taşır.
+- **Bulut senkronu**: `storage/storage.ts` tek geçiş noktasıdır; uçtan uca şifreli bir
+  eşitleme katmanı buraya eklenir. KVKK değerlendirmesi bu aşamada yapılmalı.
