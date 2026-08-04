@@ -1,7 +1,7 @@
 // PARA service worker — çevrimdışı destek.
 // Strateji: önbellekten sun, arka planda tazele (stale-while-revalidate).
 // Yeni sürüm yayınlandığında CACHE adını değiştirmek eski önbelleği temizler.
-const CACHE = 'para-v4';
+const CACHE = 'para-v5';
 
 self.addEventListener('install', () => {
   self.skipWaiting();

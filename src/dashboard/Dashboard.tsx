@@ -18,6 +18,7 @@ import {
   VarliklarFormu,
 } from '../components/forms';
 import { SenaryolarSayfasi } from './Senaryolar';
+import { GunlukHarcamalar } from '../components/Harcamalar';
 import {
   Buton,
   CipSecim,
@@ -202,10 +203,16 @@ function ButceSekmesi() {
     <>
       <h2 className="sekme-baslik">Bütçeniz</h2>
       <OzetKutulari />
+      <Kart
+        baslik="☕ Günlük harcamalar"
+        aciklama="Gerçekleşen harcamalarınız — bütçe planınızı bozmaz, onunla kıyaslanır."
+      >
+        <GunlukHarcamalar />
+      </Kart>
       <Kart baslik="Gelir">
         <GelirFormu />
       </Kart>
-      <Kart baslik="Giderler">
+      <Kart baslik="Giderler" aciklama="Aylık bütçe planınız — puan ve nakit akışı bundan hesaplanır.">
         <GiderlerFormu />
       </Kart>
     </>

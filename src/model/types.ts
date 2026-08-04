@@ -191,6 +191,24 @@ export interface AylikKayit {
   akis: number; // aylık nakit akışı
 }
 
+export type HarcamaKategorisi =
+  | 'market'
+  | 'yemek'
+  | 'ulasim'
+  | 'fatura'
+  | 'giyim'
+  | 'saglik'
+  | 'diger';
+
+/** Günlük harcama kaydı — bütçeyi ("plan") bozmaz, "gerçekleşen" olarak ayrı izlenir. */
+export interface Harcama {
+  id: string;
+  tarih: string; // "2026-08-04" (yerel gün)
+  tutar: number;
+  kategori: HarcamaKategorisi;
+  not: string;
+}
+
 /** Karar Asistanı'ndan kaydedilen bir karar — o günkü finansal fotoğrafla birlikte. */
 export interface KayitliKarar {
   id: string;
@@ -223,5 +241,6 @@ export interface AppData {
   taksitler: TaksitliAlisveris[];
   hedefler: Hedefler;
   kararlar: KayitliKarar[];
+  harcamalar: Harcama[];
   gecmis: AylikKayit[];
 }

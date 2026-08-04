@@ -503,6 +503,29 @@ select.girdi { appearance: none; cursor: pointer; }
 .karar-kiyas td, .karar-kiyas th { padding: 5px 0; border-top: 1px solid var(--cizgi); text-align: right; font-weight: 600; }
 .karar-kiyas td:first-child, .karar-kiyas th:first-child { text-align: left; font-weight: 500; color: var(--metin-soluk); }
 
+/* ---- günlük harcamalar ---- */
+
+.tempo-kutu {
+  margin-top: 14px; padding: 12px 14px;
+  border: 1.5px solid var(--cizgi); border-radius: var(--radius-kucuk);
+  background: var(--girdi-zemin);
+}
+.tempo-isaret {
+  position: absolute; top: -3px; bottom: -3px; width: 2.5px;
+  background: var(--metin-soluk); border-radius: 2px;
+}
+.tempo-hizli { color: var(--negatif); font-weight: 600; }
+
+.harcama-satir {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--cizgi);
+  font-size: 14px;
+}
+.harcama-satir .ikon { font-size: 18px; flex: none; }
+.harcama-satir .ad { flex: 1; font-weight: 600; min-width: 0; }
+.harcama-satir .ad .alt { display: block; font-weight: 500; font-size: 12px; color: var(--metin-soluk); }
+.harcama-satir .tutar { font-weight: 700; white-space: nowrap; }
+
 /* ---- grafikler ---- */
 
 .grafik-satir { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }

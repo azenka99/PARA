@@ -49,7 +49,7 @@ export function varsayilanAvatar(): AvatarConfig {
   };
 }
 
-export const VERI_SURUMU = 4;
+export const VERI_SURUMU = 5;
 
 export function varsayilanVeri(): AppData {
   return {
@@ -106,6 +106,7 @@ export function varsayilanVeri(): AppData {
     taksitler: [],
     hedefler: { rahatAylik: 0, pasifGelirAylik: 0 },
     kararlar: [],
+    harcamalar: [],
     gecmis: [],
   };
 }
