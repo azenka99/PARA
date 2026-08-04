@@ -17,7 +17,7 @@ import {
   TaksitlerFormu,
   VarliklarFormu,
 } from '../components/forms';
-import { Buton, GizlilikNotu, Kart, MetinAlani, YasalUyari } from '../components/ui';
+import { Buton, GizlilikNotu, Kart, MetinAlani, SayiAlani, YasalUyari } from '../components/ui';
 import { varsayilanAvatar } from '../model/defaults';
 
 type AdimAnahtari =
@@ -31,6 +31,7 @@ type AdimAnahtari =
   | 'gelir'
   | 'giderler'
   | 'borclar'
+  | 'hedefler'
   | 'sonuc';
 
 export function Sihirbaz() {
@@ -40,7 +41,7 @@ export function Sihirbaz() {
   const adimlar = useMemo<AdimAnahtari[]>(() => {
     const liste: AdimAnahtari[] = ['hosgeldin', 'karakter', 'hayat'];
     if (veri.profil.medeniHal === 'evli') liste.push('es');
-    liste.push('evler', 'araclar', 'varliklar', 'gelir', 'giderler', 'borclar', 'sonuc');
+    liste.push('evler', 'araclar', 'varliklar', 'gelir', 'giderler', 'borclar', 'hedefler', 'sonuc');
     return liste;
   }, [veri.profil.medeniHal]);
 
@@ -85,6 +86,7 @@ export function Sihirbaz() {
     gelir: ['Geliriniz', 'Aylık net rakamları girmeniz yeterli.'],
     giderler: ['Gideriniz', 'Yalnızca size uyan kalemleri soruyoruz.'],
     borclar: ['Borçlar ve taksitler', 'Taksitler nakit akışına, kalan borç net değerinize işlenir.'],
+    hedefler: ['Hedefleriniz', 'Bu iki cevap, size özel planın temelini oluşturur.'],
     sonuc: ['İşte manzaranız', 'Finansal durumunuzun ilk fotoğrafı hazır.'],
   };
 
@@ -113,6 +115,25 @@ export function Sihirbaz() {
 
       {adim === 'hayat' && (
         <>
+          <Kart baslik="Yaşınız" aciklama="Plan ve tavsiyeler yaşınıza göre kişiselleşir.">
+            <SayiAlani
+              etiket="Yaşınız"
+              deger={
+                veri.profil.dogumYili ? new Date().getFullYear() - veri.profil.dogumYili : 0
+              }
+              birim="yaş"
+              onDegis={(n) =>
+                degistir((v) => ({
+                  ...v,
+                  profil: {
+                    ...v.profil,
+                    dogumYili:
+                      n >= 18 && n <= 99 ? new Date().getFullYear() - Math.round(n) : null,
+                  },
+                }))
+              }
+            />
+          </Kart>
           <Kart baslik="Medeni durum">
             <MedeniHalFormu />
           </Kart>
@@ -173,6 +194,25 @@ export function Sihirbaz() {
             <TaksitlerFormu />
           </Kart>
         </>
+      )}
+
+      {adim === 'hedefler' && (
+        <Kart>
+          <SayiAlani
+            etiket="Rahat yaşamak için ayda kaç TL serbest paranız olmalı?"
+            deger={veri.hedefler.rahatAylik}
+            ipucu="Tüm giderler çıktıktan sonra elinizde 'boşa' kalmasını istediğiniz tutar."
+            onDegis={(n) => degistir((v) => ({ ...v, hedefler: { ...v.hedefler, rahatAylik: n } }))}
+          />
+          <SayiAlani
+            etiket="Finansal özgürlük için ayda ne kadar pasif gelir isterdiniz?"
+            deger={veri.hedefler.pasifGelirAylik}
+            ipucu="Çalışmasanız da yaşamınızı sürdürecek aylık gelir. İkisi de sonradan değiştirilebilir."
+            onDegis={(n) =>
+              degistir((v) => ({ ...v, hedefler: { ...v.hedefler, pasifGelirAylik: n } }))
+            }
+          />
+        </Kart>
       )}
 
       {adim === 'sonuc' && (

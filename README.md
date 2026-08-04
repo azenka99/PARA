@@ -56,6 +56,19 @@ puanınız yüksekse güneş açar.
 - Hava durumu finansal duruma tepki verir; **ölçülü animasyonlar** (bulut süzülmesi,
   yağmur, baca dumanı, yıldız ışıltısı) — sistemin "hareketi azalt" tercihine uyar.
 
+**Senaryolar ve Plan (Faz 2)**
+- **Hedefler:** yaş (doğum yılı olarak saklanır, her yıl otomatik güncellenir), "rahat yaşam
+  için aylık serbest para" ve "finansal özgürlük için aylık pasif gelir" hedefleri.
+- **Kişisel plan:** kural tabanlı, kişiselleştirilmiş plan motoru (`src/logic/plan.ts`) —
+  verilere, yaşa ve hedeflere göre sıralı, gerekçeli maddeler üretir. Finansal özgürlük
+  hesabı temkinli %4 yıllık reel getiri varsayımı kullanır (`src/logic/planConfig.ts`).
+  Ücretli servis yoktur; veri cihazdan çıkmaz. Yatırım aracı önerisi üretmez.
+- **"Ne olurdu?" hesaplayıcıları** (`src/logic/senaryo.ts`): araç alımı, ev alımı
+  (kira-taksit karşılaştırmalı), peşin mi kredi mi, birikim hedefi. Annüite kredi taksit
+  formülü kullanılır; tüm hesaplar geçicidir, gerçek veri değişmez.
+- **Korumalı çekirdek bilgiler:** medeni durum ve yaş, panelde kilitlidir — değiştirmek
+  onay ister; "ne olurdu" denemeleri Senaryolar sayfasına yönlendirilir.
+
 **Gizlilik ve kullanım**
 - Veri yalnızca cihazda (`localStorage`); JSON dosyası olarak yedek alma / geri yükleme.
 - **PIN kilidi** (isteğe bağlı), **tutarları gizleme** (göz düğmesi), **karanlık mod**

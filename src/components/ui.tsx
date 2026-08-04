@@ -286,6 +286,35 @@ export function OgeKarti({ onSil, children }: { onSil: () => void; children: Rea
   );
 }
 
+/** Çekirdek hayat bilgileri (medeni hal, yaş) için korumalı düzenleme:
+ *  önce mevcut değer gösterilir; değiştirmek onay ister. */
+export function KilitliBolum({
+  ozet,
+  uyari,
+  children,
+}: {
+  ozet: ReactNode;
+  uyari: string;
+  children: ReactNode;
+}) {
+  const [acik, setAcik] = useState(false);
+  if (acik) return <>{children}</>;
+  return (
+    <div className="kilitli-bolum">
+      <div className="kilitli-ozet">{ozet}</div>
+      <Buton
+        renk="golgesiz"
+        kucuk
+        onClick={() => {
+          if (window.confirm(uyari)) setAcik(true);
+        }}
+      >
+        🔒 Değiştir
+      </Buton>
+    </div>
+  );
+}
+
 export function YasalUyari() {
   return (
     <div className="yasal-uyari">

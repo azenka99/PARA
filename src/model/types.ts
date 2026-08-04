@@ -164,12 +164,23 @@ export interface TaksitliAlisveris {
 
 export interface Profil {
   ad: string;
+  /** Doğum yılı — yaş her yıl otomatik güncellensin diye yıl saklanır.
+   *  Medeni hal gibi "çekirdek" bilgidir; arayüzde kilitli düzenlenir. */
+  dogumYili: number | null;
   medeniHal: MedeniHal;
   avatar: AvatarConfig;
   esAd: string;
   esAvatar: AvatarConfig | null; // sadece evliyse
   cocuklar: Cocuk[];
   evciller: EvcilHayvan[];
+}
+
+/** Kullanıcının finansal hedefleri — plan motoru bunlarla kişiselleşir. */
+export interface Hedefler {
+  /** "Ayda kaç TL serbest param olsa hayatımı rahat yaşarım?" */
+  rahatAylik: number;
+  /** "Finansal özgürlük için ayda ne kadar pasif gelir isterim?" */
+  pasifGelirAylik: number;
 }
 
 /** Ay sonu anlık görüntüsü — trend grafikleri için (veri cihazda kalır). */
@@ -191,5 +202,6 @@ export interface AppData {
   giderler: Giderler;
   borclar: Borc[];
   taksitler: TaksitliAlisveris[];
+  hedefler: Hedefler;
   gecmis: AylikKayit[];
 }

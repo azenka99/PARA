@@ -17,14 +17,18 @@ import {
   TaksitlerFormu,
   VarliklarFormu,
 } from '../components/forms';
+import { SenaryolarSayfasi } from './Senaryolar';
 import {
   Buton,
   CipSecim,
   GizlilikNotu,
   Kart,
+  KilitliBolum,
   MetinAlani,
+  SayiAlani,
   YasalUyari,
 } from '../components/ui';
+import { yasHesapla } from '../logic/plan';
 import {
   aylikGelir,
   aylikGider,
@@ -37,11 +41,12 @@ import { puanHesapla } from '../logic/score';
 import { varsayilanAvatar, varsayilanVeri } from '../model/defaults';
 import { veriSil, yedekIndir, yedekOku } from '../storage/storage';
 
-type Sekme = 'manzara' | 'puan' | 'varliklar' | 'butce' | 'profil';
+type Sekme = 'manzara' | 'senaryolar' | 'puan' | 'varliklar' | 'butce' | 'profil';
 
 const SEKMELER: Array<{ anahtar: Sekme; ad: string; ikon: string }> = [
   { anahtar: 'manzara', ad: 'Manzara', ikon: '🏞️' },
   { anahtar: 'puan', ad: 'Puan', ikon: '◐' },
+  { anahtar: 'senaryolar', ad: 'Plan', ikon: '🎯' },
   { anahtar: 'varliklar', ad: 'Varlıklar', ikon: '◆' },
   { anahtar: 'butce', ad: 'Bütçe', ikon: '☰' },
   { anahtar: 'profil', ad: 'Profil', ikon: '●' },
@@ -73,7 +78,7 @@ function OzetKutulari() {
   );
 }
 
-function ManzaraSekmesi() {
+function ManzaraSekmesi({ senaryolaraGit }: { senaryolaraGit: () => void }) {
   const { veri } = useVeri();
   const { tutar } = useGizli();
   const akis = nakitAkisi(veri);
@@ -90,6 +95,16 @@ function ManzaraSekmesi() {
           🌧️ Bu ay {tutar(-akis)} açık veriyorsunuz — o yüzden manzaranızda yağmur yağıyor.
         </div>
       )}
+      <div className="kart hero-senaryo">
+        <div className="hero-metin">
+          <h3>🎯 Senaryolar ve Plan</h3>
+          <p>
+            "Bu arabayı alsam ne olur?" • "Kredi mi peşin mi?" • Finansal özgürlüğe ne kadar var?
+            Hedeflerinize göre kişisel plan burada.
+          </p>
+        </div>
+        <Buton onClick={senaryolaraGit}>Sayfayı aç →</Buton>
+      </div>
       <OzetKutulari />
       {veri.gecmis.length >= 2 && (
         <Kart baslik="Net değer gelişimi" aciklama="Ay sonu kayıtlarından.">
@@ -278,10 +293,60 @@ function ProfilSekmesi() {
           onDegis={(c) => degistir((v) => ({ ...v, profil: { ...v.profil, avatar: c } }))}
         />
       </Kart>
-      <Kart baslik="Medeni durum">
-        <MedeniHalFormu />
+      <Kart
+        baslik="Hayat bilgileri"
+        aciklama="Medeni durum ve yaş; puanı ve planı doğrudan etkiler. Bu yüzden değişiklik onay ister — denemeler için Senaryolar sayfası var."
+      >
+        <KilitliBolum
+          ozet={
+            <span>
+              {veri.profil.medeniHal === 'evli'
+                ? `Evli${veri.profil.esAd ? ` — eş: ${veri.profil.esAd}` : ''}`
+                : veri.profil.medeniHal === 'bosanmis'
+                  ? 'Boşanmış'
+                  : 'Bekâr'}
+              <span className="alt">Medeni durum</span>
+            </span>
+          }
+          uyari="Medeni durum gerçek hayat bilginizdir; puan ve plan hesaplarını doğrudan etkiler. 'Ne olurdu?' denemeleri için Senaryolar sayfasını kullanın. Yine de değiştirmek istiyor musunuz?"
+        >
+          <MedeniHalFormu />
+        </KilitliBolum>
+        <div style={{ height: 12 }} />
+        {yasHesapla(veri) !== null ? (
+          <KilitliBolum
+            ozet={
+              <span>
+                {yasHesapla(veri)} yaş
+                <span className="alt">Doğum yılı: {veri.profil.dogumYili}</span>
+              </span>
+            }
+            uyari="Yaş, planın tavsiyelerini şekillendiren gerçek hayat bilginizdir. Yine de değiştirmek istiyor musunuz?"
+          >
+            <SayiAlani
+              etiket="Yaşınız"
+              deger={yasHesapla(veri) ?? 0}
+              birim="yaş"
+              onDegis={(n) =>
+                degistir((v) => ({
+                  ...v,
+                  profil: {
+                    ...v.profil,
+                    dogumYili:
+                      n >= 18 && n <= 99 ? new Date().getFullYear() - Math.round(n) : v.profil.dogumYili,
+                  },
+                }))
+              }
+            />
+          </KilitliBolum>
+        ) : (
+          <p className="kart-aciklama">
+            Yaşınız henüz girilmemiş — Senaryolar sayfasındaki Hedefler bölümünden ekleyebilirsiniz.
+          </p>
+        )}
         {veri.profil.medeniHal === 'evli' && (
           <>
+            <div style={{ height: 12 }} />
             <Buton renk="golgesiz" kucuk onClick={() => setEsDuzenle(!esDuzenle)}>
               {esDuzenle ? 'Eş karakterini gizle' : 'Eş karakterini düzenle'}
             </Buton>
@@ -404,7 +469,8 @@ export function Panel() {
   return (
     <>
       <div className="icerik">
-        {sekme === 'manzara' && <ManzaraSekmesi />}
+        {sekme === 'manzara' && <ManzaraSekmesi senaryolaraGit={() => setSekme('senaryolar')} />}
+        {sekme === 'senaryolar' && <SenaryolarSayfasi />}
         {sekme === 'puan' && <PuanSekmesi />}
         {sekme === 'varliklar' && <VarliklarSekmesi />}
         {sekme === 'butce' && <ButceSekmesi />}
@@ -416,7 +482,7 @@ export function Panel() {
             <button
               key={s.anahtar}
               type="button"
-              className={`nav-buton${sekme === s.anahtar ? ' aktif' : ''}`}
+              className={`nav-buton${s.anahtar === 'senaryolar' ? ' one' : ''}${sekme === s.anahtar ? ' aktif' : ''}`}
               onClick={() => setSekme(s.anahtar)}
             >
               <span className="ikon">{s.ikon}</span>

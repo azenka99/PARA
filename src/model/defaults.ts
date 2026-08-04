@@ -49,7 +49,7 @@ export function varsayilanAvatar(): AvatarConfig {
   };
 }
 
-export const VERI_SURUMU = 2;
+export const VERI_SURUMU = 3;
 
 export function varsayilanVeri(): AppData {
   return {
@@ -57,6 +57,7 @@ export function varsayilanVeri(): AppData {
     kurulumTamam: false,
     profil: {
       ad: '',
+      dogumYili: null,
       medeniHal: 'bekar',
       avatar: varsayilanAvatar(),
       esAd: '',
@@ -103,6 +104,7 @@ export function varsayilanVeri(): AppData {
     },
     borclar: [],
     taksitler: [],
+    hedefler: { rahatAylik: 0, pasifGelirAylik: 0 },
     gecmis: [],
   };
 }
