@@ -198,6 +198,10 @@ export function KararAsistani() {
     if (!tur) return;
     const yeniG = { ...g, ...degisiklik };
     const sonuc = hesapla(veri, tur, yeniG);
+    // Çalışma senaryosunu güncelle: sonraki sorular ve "Kararı kaydet",
+    // ilk girdilerin değil SON değerlendirmenin üzerinden işler.
+    setG(yeniG);
+    if (sonuc) sonSonuc.current = sonuc;
     setMesajlar((m) => [
       ...m,
       { kim: 'ben', metin: soruMetni },
