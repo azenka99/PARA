@@ -1,7 +1,7 @@
-// Manzara service worker — çevrimdışı destek.
+// PARA service worker — çevrimdışı destek.
 // Strateji: önbellekten sun, arka planda tazele (stale-while-revalidate).
 // Yeni sürüm yayınlandığında CACHE adını değiştirmek eski önbelleği temizler.
-const CACHE = 'manzara-v1';
+const CACHE = 'para-v2';
 
 self.addEventListener('install', () => {
   self.skipWaiting();

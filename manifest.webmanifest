@@ -1,13 +1,13 @@
 {
-  "name": "Manzara — Kişisel Finans",
-  "short_name": "Manzara",
-  "description": "Finansal durumunu tek bakışta gösteren, verilerini cihazında tutan kişisel finans uygulaması.",
+  "name": "PARA — Kişisel Finans",
+  "short_name": "PARA",
+  "description": "Finansal durumunuzu tek bakışta gösteren, verilerinizi cihazınızda tutan kişisel finans uygulaması.",
   "lang": "tr",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f3f0ff",
-  "theme_color": "#7c5cff",
+  "background_color": "#eef1f6",
+  "theme_color": "#23456e",
   "icons": [
     {
       "src": "./icons/icon-192.png",
