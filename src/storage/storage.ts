@@ -65,6 +65,7 @@ export function veriTasima(ham: unknown): AppData {
     borclar: Array.isArray(v.borclar) ? v.borclar : [],
     taksitler: Array.isArray(v.taksitler) ? v.taksitler : [],
     hedefler: { ...taban.hedefler, ...(v.hedefler ?? {}) },
+    kararlar: Array.isArray(v.kararlar) ? v.kararlar : [],
     gecmis: Array.isArray(v.gecmis) ? v.gecmis : [],
   };
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { veriTasima } from './storage';
+import { VERI_SURUMU } from '../model/defaults';
 
 describe('veri göçü (v1 -> v2)', () => {
   it('eski hisseler ve fonEtf tek yatırım listesine taşınır', () => {
@@ -24,7 +25,7 @@ describe('veri göçü (v1 -> v2)', () => {
     };
     const v2 = veriTasima(v1);
 
-    expect(v2.surum).toBe(3);
+    expect(v2.surum).toBe(VERI_SURUMU);
     expect(v2.varliklar.yatirimlar).toHaveLength(2);
     expect(v2.varliklar.yatirimlar[0]).toMatchObject({ ad: 'THYAO', tur: 'hisse', deger: 30000 });
     expect(v2.varliklar.yatirimlar[1]).toMatchObject({ ad: 'Fon toplamı', tur: 'fon', deger: 50000 });
@@ -55,7 +56,7 @@ describe('veri göçü (v1 -> v2)', () => {
 
   it('bozuk girdi varsayılan veri döndürür', () => {
     expect(veriTasima(null).profil.ad).toBe('');
-    expect(veriTasima('çöp').surum).toBe(3);
+    expect(veriTasima('çöp').surum).toBe(VERI_SURUMU);
   });
 
   it('v2 verisi olduğu gibi korunur', () => {

@@ -24,6 +24,22 @@ export function krediTaksiti(anapara: number, aylikFaizYuzde: number, vadeAy: nu
 
 export type Hukum = 'iyi' | 'dikkat' | 'riskli';
 
+/** Acil fonu 3 ayın altına düşürmeden ayrılabilecek en yüksek peşinat. */
+export function guvenliPesinat(veri: AppData): number {
+  return Math.max(0, likitVarlik(veri) - 3 * aylikGider(veri));
+}
+
+/** "Beklesem?" hesabı: acil fonu (3 ay) koruyarak hedef tutarı biriktirmek
+ *  kaç ay sürer? null: mevcut nakit akışıyla ulaşılamıyor. */
+export function beklersenAy(veri: AppData, hedefTutar: number): number | null {
+  const akis = nakitAkisi(veri);
+  const eksik = hedefTutar + 3 * aylikGider(veri) - likitVarlik(veri);
+  if (eksik <= 0) return 0;
+  if (akis <= 0) return null;
+  const ay = Math.ceil(eksik / akis);
+  return ay <= 600 ? ay : null;
+}
+
 export interface SenaryoSatiri {
   ad: string;
   deger: string;

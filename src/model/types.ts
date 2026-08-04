@@ -191,6 +191,25 @@ export interface AylikKayit {
   akis: number; // aylık nakit akışı
 }
 
+/** Karar Asistanı'ndan kaydedilen bir karar — o günkü finansal fotoğrafla birlikte. */
+export interface KayitliKarar {
+  id: string;
+  tarih: string; // ISO
+  tur: 'arac' | 'ev' | 'pesin' | 'birikim';
+  baslik: string; // örn. "Araba — 1,5 M ₺, 400 B peşinat, 24 ay"
+  hukum: 'iyi' | 'dikkat' | 'riskli';
+  ozet: string;
+  /** Kararın verildiği günkü durum — sonra "o gün → bugün" karşılaştırması için. */
+  foto: {
+    netDeger: number;
+    akis: number;
+    borcYukuYuzde: number;
+    acilFonAy: number;
+  };
+  /** Bu tarihten sonra uygulama nazikçe "yeniden bak" hatırlatır. null: hatırlatma yok. */
+  hatirlatma: string | null; // ISO
+}
+
 export interface AppData {
   surum: number; // veri şeması sürümü (ileriye dönük taşıma için)
   kurulumTamam: boolean; // sihirbaz bitti mi
@@ -203,5 +222,6 @@ export interface AppData {
   borclar: Borc[];
   taksitler: TaksitliAlisveris[];
   hedefler: Hedefler;
+  kararlar: KayitliKarar[];
   gecmis: AylikKayit[];
 }

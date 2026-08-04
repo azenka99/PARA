@@ -1,128 +1,19 @@
 // "Senaryolar ve Plan" sayfası — Faz 2'nin kalbi.
-// Hedefler + kişiselleştirilmiş plan + "ne olurdu?" hesaplayıcıları.
-// Tüm senaryo hesapları geçicidir; kullanıcının gerçek verisi değişmez.
+// Hedefler + kişisel plan + Karar Asistanı (elemeli akış → sohbet) + Kararlarım arşivi.
 import { useState } from 'react';
 import { useGizli, useVeri } from '../state';
+import type { KayitliKarar } from '../model/types';
 import { yasHesapla, ozgurlukHesapla, planOlustur } from '../logic/plan';
-import { VARSAYILAN_PLAN_AYARLARI } from '../logic/planConfig';
 import {
-  aracSenaryosu,
-  birikimHedefi,
-  evSenaryosu,
-  pesinMiKrediMi,
-  type SenaryoSonucu,
-} from '../logic/senaryo';
-import { BosIpucu, Buton, CipSecim, Kart, SayiAlani, YasalUyari } from '../components/ui';
-
-function HukumRozeti({ hukum }: { hukum: SenaryoSonucu['hukum'] }) {
-  const ad = hukum === 'iyi' ? 'Uygun görünüyor' : hukum === 'dikkat' ? 'Dikkatli olun' : 'Riskli';
-  return <span className={`rozet-hukum ${hukum}`}>{ad}</span>;
-}
-
-function SonucKutusu({ sonuc }: { sonuc: SenaryoSonucu }) {
-  const { gizli } = useGizli();
-  return (
-    <div className="senaryo-sonuc">
-      <div className="senaryo-sonuc-ust">
-        <HukumRozeti hukum={sonuc.hukum} />
-      </div>
-      <p className="senaryo-ozet">{sonuc.ozet}</p>
-      <table className="senaryo-tablo">
-        <tbody>
-          {sonuc.satirlar.map((s) => (
-            <tr key={s.ad}>
-              <td>{s.ad}</td>
-              <td className={s.vurgu === 'iyi' ? 'iyi' : s.vurgu === 'kotu' ? 'kotu' : ''}>
-                {gizli ? '••••••' : s.deger}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <p className="alan-ipucu">Bu hesap geçicidir — gerçek verileriniz değişmedi.</p>
-    </div>
-  );
-}
-
-type SenaryoTuru = 'arac' | 'ev' | 'pesin' | 'birikim';
-
-function SenaryoHesaplayici() {
-  const { veri } = useVeri();
-  const [tur, setTur] = useState<SenaryoTuru>('arac');
-
-  const [arac, setArac] = useState({ fiyat: 0, pesinat: 0, aylikFaiz: 3, vadeAy: 24 });
-  const [ev, setEv] = useState({ fiyat: 0, pesinat: 0, aylikFaiz: 2.5, vadeAy: 120 });
-  const [pesin, setPesin] = useState({ tutar: 0, aylikFaiz: 3, vadeAy: 12 });
-  const [birikim, setBirikim] = useState({ hedefTutar: 0, aylikBirikim: 0 });
-
-  const sonuc: SenaryoSonucu | null =
-    tur === 'arac'
-      ? aracSenaryosu(veri, arac)
-      : tur === 'ev'
-        ? evSenaryosu(veri, ev)
-        : tur === 'pesin'
-          ? pesinMiKrediMi(veri, pesin)
-          : birikimHedefi(veri, {
-              ...birikim,
-              yillikGetiri: VARSAYILAN_PLAN_AYARLARI.yillikReelGetiri,
-            });
-
-  return (
-    <div>
-      <CipSecim
-        secenekler={[
-          { deger: 'arac', ad: '🚗 Araç alsam?' },
-          { deger: 'ev', ad: '🏠 Ev alsam?' },
-          { deger: 'pesin', ad: '⚖️ Peşin mi kredi mi?' },
-          { deger: 'birikim', ad: '📈 Birikim hedefi' },
-        ]}
-        deger={tur}
-        onDegis={setTur}
-      />
-
-      {tur === 'arac' && (
-        <div className="izgara-2">
-          <SayiAlani etiket="Araç fiyatı" deger={arac.fiyat} onDegis={(n) => setArac({ ...arac, fiyat: n })} />
-          <SayiAlani etiket="Peşinat" deger={arac.pesinat} onDegis={(n) => setArac({ ...arac, pesinat: n })} />
-          <SayiAlani etiket="Aylık kredi faizi" deger={arac.aylikFaiz} birim="%" onDegis={(n) => setArac({ ...arac, aylikFaiz: n })} />
-          <SayiAlani etiket="Vade" deger={arac.vadeAy} birim="ay" onDegis={(n) => setArac({ ...arac, vadeAy: Math.round(n) })} />
-        </div>
-      )}
-      {tur === 'ev' && (
-        <div className="izgara-2">
-          <SayiAlani etiket="Ev fiyatı" deger={ev.fiyat} onDegis={(n) => setEv({ ...ev, fiyat: n })} />
-          <SayiAlani etiket="Peşinat" deger={ev.pesinat} onDegis={(n) => setEv({ ...ev, pesinat: n })} />
-          <SayiAlani etiket="Aylık kredi faizi" deger={ev.aylikFaiz} birim="%" onDegis={(n) => setEv({ ...ev, aylikFaiz: n })} />
-          <SayiAlani etiket="Vade" deger={ev.vadeAy} birim="ay" onDegis={(n) => setEv({ ...ev, vadeAy: Math.round(n) })} />
-        </div>
-      )}
-      {tur === 'pesin' && (
-        <div className="izgara-2">
-          <SayiAlani etiket="Alınacak şeyin tutarı" deger={pesin.tutar} onDegis={(n) => setPesin({ ...pesin, tutar: n })} />
-          <SayiAlani etiket="Aylık kredi faizi" deger={pesin.aylikFaiz} birim="%" onDegis={(n) => setPesin({ ...pesin, aylikFaiz: n })} />
-          <SayiAlani etiket="Vade" deger={pesin.vadeAy} birim="ay" onDegis={(n) => setPesin({ ...pesin, vadeAy: Math.round(n) })} />
-        </div>
-      )}
-      {tur === 'birikim' && (
-        <>
-          <div className="izgara-2">
-            <SayiAlani etiket="Hedef tutar" deger={birikim.hedefTutar} onDegis={(n) => setBirikim({ ...birikim, hedefTutar: n })} />
-            <SayiAlani etiket="Aylık biriktireceğiniz" deger={birikim.aylikBirikim} onDegis={(n) => setBirikim({ ...birikim, aylikBirikim: n })} />
-          </div>
-          <p className="alan-ipucu">
-            Hesap, yıllık %{Math.round(VARSAYILAN_PLAN_AYARLARI.yillikReelGetiri * 100)} temkinli reel getiri varsayımı kullanır.
-          </p>
-        </>
-      )}
-
-      {sonuc ? (
-        <SonucKutusu sonuc={sonuc} />
-      ) : (
-        <BosIpucu>Yukarıdaki alanları doldurun; sonuç anında burada belirir.</BosIpucu>
-      )}
-    </div>
-  );
-}
+  aylikGelir,
+  aylikGider,
+  aylikTaksitler,
+  likitVarlik,
+  nakitAkisi,
+  netDeger,
+} from '../logic/finance';
+import { KararAsistani } from '../components/KararAsistani';
+import { Buton, Kart, SayiAlani, YasalUyari } from '../components/ui';
 
 function YasAlani() {
   const { veri, degistir } = useVeri();
@@ -132,30 +23,123 @@ function YasAlani() {
   if (yas !== null) return null; // yaş belli — Profil sayfasında kilitli olarak yönetilir
 
   return (
-    <div>
-      <div className="satir">
-        <SayiAlani
-          etiket="Yaşınız"
-          deger={girilen}
-          birim="yaş"
-          ipucu="Plan, tavsiyelerini yaşınıza göre şekillendirir. Sonradan değiştirmek onay ister."
-          onDegis={setGirilen}
-        />
-        <div style={{ paddingBottom: 14, flex: 'none' }}>
-          <Buton
-            kucuk
-            disabled={girilen < 18 || girilen > 99}
-            onClick={() =>
-              degistir((v) => ({
-                ...v,
-                profil: { ...v.profil, dogumYili: new Date().getFullYear() - Math.round(girilen) },
-              }))
-            }
-          >
-            Kaydet
-          </Buton>
-        </div>
+    <div className="satir">
+      <SayiAlani
+        etiket="Yaşınız"
+        deger={girilen}
+        birim="yaş"
+        ipucu="Plan, tavsiyelerini yaşınıza göre şekillendirir. Sonradan değiştirmek onay ister."
+        onDegis={setGirilen}
+      />
+      <div style={{ paddingBottom: 14, flex: 'none' }}>
+        <Buton
+          kucuk
+          disabled={girilen < 18 || girilen > 99}
+          onClick={() =>
+            degistir((v) => ({
+              ...v,
+              profil: { ...v.profil, dogumYili: new Date().getFullYear() - Math.round(girilen) },
+            }))
+          }
+        >
+          Kaydet
+        </Buton>
       </div>
+    </div>
+  );
+}
+
+function KararSatiri({ karar }: { karar: KayitliKarar }) {
+  const { veri, degistir } = useVeri();
+  const { tutar } = useGizli();
+  const [acik, setAcik] = useState(false);
+
+  const hatirlatmaZamani = !!karar.hatirlatma && karar.hatirlatma <= new Date().toISOString();
+  const tarih = new Date(karar.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const hukumAd = karar.hukum === 'iyi' ? 'Uygun' : karar.hukum === 'dikkat' ? 'Dikkat' : 'Riskli';
+
+  // bugünkü değerler — "o gün → bugün"
+  const gelir = aylikGelir(veri);
+  const gider = aylikGider(veri);
+  const bugun = {
+    netDeger: netDeger(veri),
+    akis: nakitAkisi(veri),
+    borcYukuYuzde: gelir > 0 ? Math.round((aylikTaksitler(veri) / gelir) * 100) : 0,
+    acilFonAy: gider > 0 ? Math.round((likitVarlik(veri) / gider) * 10) / 10 : 0,
+  };
+
+  return (
+    <div className={`karar-oge${hatirlatmaZamani ? ' hatirlatma-zamani' : ''}`}>
+      <div className="karar-oge-ust" onClick={() => setAcik(!acik)}>
+        <span className={`rozet-hukum ${karar.hukum}`}>{hukumAd}</span>
+        <span className="baslik">{karar.baslik}</span>
+        <span className="tarih">{tarih}</span>
+        <span style={{ color: 'var(--metin-soluk)' }}>{acik ? '▴' : '▾'}</span>
+      </div>
+      {hatirlatmaZamani && (
+        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--vurgu-koyu)', margin: '8px 0 0' }}>
+          🔔 Bu karara yeniden bakma zamanı geldi — aşağıdan o gün ile bugünü karşılaştırın.
+        </p>
+      )}
+      {acik && (
+        <div className="karar-kiyas">
+          <p style={{ margin: '6px 0' }}>{karar.ozet}</p>
+          <table>
+            <tbody>
+              <tr>
+                <th></th>
+                <th>O gün</th>
+                <th>Bugün</th>
+              </tr>
+              <tr>
+                <td>Net değer</td>
+                <td>{tutar(karar.foto.netDeger)}</td>
+                <td>{tutar(bugun.netDeger)}</td>
+              </tr>
+              <tr>
+                <td>Ay sonu kalan</td>
+                <td>{tutar(karar.foto.akis)}</td>
+                <td>{tutar(bugun.akis)}</td>
+              </tr>
+              <tr>
+                <td>Borç yükü</td>
+                <td>%{karar.foto.borcYukuYuzde}</td>
+                <td>%{bugun.borcYukuYuzde}</td>
+              </tr>
+              <tr>
+                <td>Acil fon</td>
+                <td>{karar.foto.acilFonAy.toString().replace('.', ',')} ay</td>
+                <td>{bugun.acilFonAy.toString().replace('.', ',')} ay</td>
+              </tr>
+            </tbody>
+          </table>
+          <div className="satir" style={{ marginTop: 10 }}>
+            {karar.hatirlatma && (
+              <Buton
+                renk="golgesiz"
+                kucuk
+                onClick={() =>
+                  degistir((v) => ({
+                    ...v,
+                    kararlar: v.kararlar.map((k) => (k.id === karar.id ? { ...k, hatirlatma: null } : k)),
+                  }))
+                }
+              >
+                Hatırlatmayı kapat
+              </Buton>
+            )}
+            <Buton
+              renk="tehlike"
+              kucuk
+              onClick={() =>
+                degistir((v) => ({ ...v, kararlar: v.kararlar.filter((k) => k.id !== karar.id) }))
+              }
+            >
+              Sil
+            </Buton>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -170,6 +154,21 @@ export function SenaryolarSayfasi() {
   return (
     <>
       <h2 className="sekme-baslik">Senaryolar ve Plan</h2>
+
+      <Kart
+        baslik="💬 Karar Asistanı"
+        aciklama="Büyük bir karar mı var? Birkaç soruyla birlikte değerlendirelim — gerçek verileriniz değişmez."
+      >
+        <KararAsistani />
+      </Kart>
+
+      {veri.kararlar.length > 0 && (
+        <Kart baslik="📁 Kararlarım" aciklama="Kaydettiğiniz kararlar — açınca 'o gün → bugün' karşılaştırması.">
+          {veri.kararlar.map((k) => (
+            <KararSatiri key={k.id} karar={k} />
+          ))}
+        </Kart>
+      )}
 
       <Kart
         baslik="🎯 Hedefleriniz"
@@ -230,13 +229,6 @@ export function SenaryolarSayfasi() {
             </div>
           </div>
         ))}
-      </Kart>
-
-      <Kart
-        baslik="🔮 Ne olurdu?"
-        aciklama="Büyük kararları satın almadan önce burada deneyin — gerçek verileriniz değişmez."
-      >
-        <SenaryoHesaplayici />
       </Kart>
 
       <YasalUyari />

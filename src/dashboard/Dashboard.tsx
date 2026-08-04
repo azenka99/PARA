@@ -29,6 +29,7 @@ import {
   YasalUyari,
 } from '../components/ui';
 import { yasHesapla } from '../logic/plan';
+import { aiAnahtarKaydet, aiAnahtarSil, aiAnahtarVar } from '../logic/ai';
 import {
   aylikGelir,
   aylikGider,
@@ -82,11 +83,23 @@ function ManzaraSekmesi({ senaryolaraGit }: { senaryolaraGit: () => void }) {
   const { veri } = useVeri();
   const { tutar } = useGizli();
   const akis = nakitAkisi(veri);
+  const simdi = new Date().toISOString();
+  const hatirlatmalar = veri.kararlar.filter((k) => k.hatirlatma && k.hatirlatma <= simdi);
   return (
     <>
       <h2 className="sekme-baslik">
         Merhaba{veri.profil.ad ? `, ${veri.profil.ad}` : ''}
       </h2>
+      {hatirlatmalar.length > 0 && (
+        <div className="yasal-uyari" style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <span style={{ flex: 1, minWidth: 200 }}>
+            🔔 "{hatirlatmalar[0].baslik}" kararınıza yeniden bakma zamanı geldi.
+          </span>
+          <Buton kucuk onClick={senaryolaraGit}>
+            Karara git →
+          </Buton>
+        </div>
+      )}
       <Kart className="sahne-kart">
         <Sahne veri={veri} />
       </Kart>
@@ -272,6 +285,66 @@ function PinAyari() {
   );
 }
 
+function AiAyari() {
+  const [anahtarli, setAnahtarli] = useState(() => aiAnahtarVar());
+  const [girilen, setGirilen] = useState('');
+
+  return (
+    <div>
+      <p className="kart-aciklama">
+        Karar Asistanı'ndaki hazır sorular her zaman ücretsizdir. Kendi cümlelerinizle
+        serbest soru sorabilmek isterseniz buraya bir Claude API anahtarı ekleyin
+        (console.anthropic.com adresinden alınır; soru başına maliyet kuruşlar düzeyindedir).
+        Anahtar yalnızca bu cihazda saklanır; sorularınızla birlikte yalnızca isimsiz,
+        yuvarlanmış finansal özet rakamları gönderilir.
+      </p>
+      {anahtarli ? (
+        <div className="satir">
+          <span style={{ fontWeight: 600, fontSize: 14 }}>✓ Anahtar kayıtlı — serbest sorular açık.</span>
+          <div style={{ flex: 'none' }}>
+            <Buton
+              renk="golgesiz"
+              kucuk
+              onClick={() => {
+                aiAnahtarSil();
+                setAnahtarli(false);
+              }}
+            >
+              Anahtarı kaldır
+            </Buton>
+          </div>
+        </div>
+      ) : (
+        <div className="satir">
+          <label className="alan" style={{ flex: 1 }}>
+            <span className="alan-etiket">Claude API anahtarı</span>
+            <input
+              className="girdi"
+              type="password"
+              placeholder="sk-ant-…"
+              value={girilen}
+              onChange={(e) => setGirilen(e.target.value)}
+            />
+          </label>
+          <div style={{ paddingBottom: 14, flex: 'none' }}>
+            <Buton
+              kucuk
+              disabled={!girilen.trim().startsWith('sk-')}
+              onClick={() => {
+                aiAnahtarKaydet(girilen);
+                setGirilen('');
+                setAnahtarli(true);
+              }}
+            >
+              Kaydet
+            </Buton>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProfilSekmesi() {
   const { veri, degistir, sifirla } = useVeri();
   const { tema, setTema } = useTema();
@@ -383,6 +456,10 @@ function ProfilSekmesi() {
 
       <Kart baslik="Güvenlik — PIN kilidi">
         <PinAyari />
+      </Kart>
+
+      <Kart baslik="Yapay zeka (isteğe bağlı)">
+        <AiAyari />
       </Kart>
 
       <Kart

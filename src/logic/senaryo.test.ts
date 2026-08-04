@@ -72,6 +72,30 @@ describe('birikim hedefi', () => {
   });
 });
 
+describe('karar asistanı yardımcıları', () => {
+  it('güvenli peşinat: likit − 3 aylık gider', async () => {
+    const { guvenliPesinat } = await import('./senaryo');
+    const v = ornekVeri(); // likit 600.000, gider 50.000
+    expect(guvenliPesinat(v)).toBe(450000);
+  });
+
+  it('beklersen: acil fonu koruyarak hedefe kalan ay', async () => {
+    const { beklersenAy } = await import('./senaryo');
+    const v = ornekVeri(); // likit 600.000, gider 50.000, akış +50.000
+    // hedef 700.000 + 150.000 (3 ay) − 600.000 = 250.000 → 5 ay
+    expect(beklersenAy(v, 700000)).toBe(5);
+    // likit zaten yetiyorsa 0
+    expect(beklersenAy(v, 400000)).toBe(0);
+  });
+
+  it('beklersen: akış yoksa null', async () => {
+    const { beklersenAy } = await import('./senaryo');
+    const v = ornekVeri();
+    v.gelir.maas = 50000; // akış 0
+    expect(beklersenAy(v, 700000)).toBeNull();
+  });
+});
+
 describe('plan motoru', () => {
   it('yaş doğum yılından hesaplanır', () => {
     const v = varsayilanVeri();
