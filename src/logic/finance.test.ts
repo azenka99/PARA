@@ -153,6 +153,13 @@ describe('gider ve profil filtresi', () => {
     expect(bantUygunMu(cocuklar, 'universite')).toBe(false);
   });
 
+  it('25 yaş üstü çocuk için hiçbir çocuk gideri hesaba katılmaz', () => {
+    const v = ornekVeri();
+    v.profil.cocuklar = [{ id: 'c1', ad: 'Yetişkin', yas: 30 }];
+    v.giderler.cocuk = { bezMama: 1000, kresBakici: 1000, okulKirtasiye: 1000, harclik: 1000, universite: 1000 };
+    expect(giderDokumu(v).cocuk).toBe(0);
+  });
+
   it('üniversite bandı (18-25) ayrı hesaplanır', () => {
     const v = ornekVeri();
     v.profil.cocuklar = [{ id: 'c1', ad: 'Genç', yas: 20 }];

@@ -22,7 +22,7 @@ export interface AvatarConfig {
 export interface Cocuk {
   id: string;
   ad: string;
-  yas: number; // 0-25
+  yas: number; // 0-99 — 25 üstü çocuklar sahnede görünür, gider bantlarına girmez
 }
 
 export type EvcilTur = 'kedi' | 'kopek' | 'kus' | 'balik' | 'diger';

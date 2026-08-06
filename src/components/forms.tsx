@@ -108,7 +108,7 @@ export function CocuklarFormu() {
                   profil: {
                     ...v.profil,
                     cocuklar: v.profil.cocuklar.map((x) =>
-                      x.id === c.id ? { ...x, yas: Math.min(25, Math.round(n)) } : x,
+                      x.id === c.id ? { ...x, yas: Math.min(99, Math.round(n)) } : x,
                     ),
                   },
                 }))
